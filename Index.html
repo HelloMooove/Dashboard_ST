@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Traveller — A Portrait in Numbers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@200..800&family=JetBrains+Mono:wght@300..700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root {
+    --paper: #F4EEE2; --paper-deep: #EDE5D3; --ink: #0A1F33; --ink-soft: #1B3550;
+    --coral: #DD6B4D; --coral-deep: #B84F33; --teal: #1A5F7A; --teal-deep: #0F4257;
+    --gold: #B08D4F; --gold-soft: #C9A767; --sand: #D4C4A4;
+    --line: rgba(10, 31, 51, 0.18); --muted: #6B6259;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--paper); color: var(--ink); font-family: 'Manrope', sans-serif;
+    line-height: 1.55; overflow-x: hidden;
+    background-image: radial-gradient(circle at 1px 1px, rgba(10, 31, 51, 0.04) 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+  .container { max-width: 1280px; margin: 0 auto; padding: 0 48px; }
+  @media (max-width: 768px) { .container { padding: 0 24px; } }
+  section { padding: 80px 0; position: relative; }
+
+  /* === TAB NAV (top bar) === */
+  .topnav {
+    background: var(--ink); color: var(--paper);
+    padding: 14px 0; position: sticky; top: 0; z-index: 100;
+    border-bottom: 1px solid rgba(244, 238, 226, 0.1);
+  }
+  .topnav-inner {
+    max-width: 1280px; margin: 0 auto; padding: 0 48px;
+    display: flex; align-items: center; justify-content: space-between; gap: 32px;
+  }
+  @media (max-width: 768px) { .topnav-inner { padding: 0 24px; gap: 16px; } }
+  .topnav-brand {
+    font-family: 'Fraunces', serif; font-weight: 400; font-size: 19px; letter-spacing: -0.01em;
+  }
+  .topnav-brand .em { font-style: italic; color: var(--coral); }
+  .tab-switch { display: flex; gap: 4px; background: rgba(244, 238, 226, 0.08); padding: 4px; border-radius: 2px; }
+  .tab-switch button {
+    background: transparent; border: 0; color: rgba(244, 238, 226, 0.65);
+    font-family: 'Manrope', sans-serif; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.18em;
+    padding: 8px 18px; cursor: pointer; transition: all 0.2s;
+    border-radius: 1px;
+  }
+  .tab-switch button:hover { color: var(--paper); }
+  .tab-switch button.active { background: var(--coral); color: var(--paper); }
+  @media (max-width: 600px) {
+    .topnav-brand { font-size: 15px; }
+    .tab-switch button { padding: 8px 12px; font-size: 10px; letter-spacing: 0.12em; }
+  }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* === HERO === */
+  .hero {
+    background: linear-gradient(170deg, var(--ink) 0%, var(--teal-deep) 70%, var(--coral-deep) 130%);
+    color: var(--paper); padding: 72px 0 96px; position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background-image: radial-gradient(ellipse at 80% 20%, rgba(221, 107, 77, 0.35) 0%, transparent 50%),
+                      radial-gradient(ellipse at 20% 80%, rgba(176, 141, 79, 0.25) 0%, transparent 50%);
+  }
+  .hero-grain {
+    position: absolute; inset: 0; opacity: 0.06; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  }
+  .hero-content { position: relative; z-index: 2; }
+  .hero-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid rgba(244, 238, 226, 0.25); padding-bottom: 20px; margin-bottom: 60px;
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 600;
+  }
+  .hero-meta .left { display: flex; gap: 28px; align-items: center; }
+  .hero-meta .badge { background: var(--coral); color: var(--paper); padding: 6px 12px; border-radius: 1px; font-weight: 700; }
+  .hero-eyebrow { font-family: 'Fraunces', serif; font-style: italic; font-weight: 300;
+    font-size: clamp(20px, 2.4vw, 30px); color: var(--gold-soft); margin-bottom: 16px; }
+  .hero-title { font-family: 'Fraunces', serif; font-weight: 400; letter-spacing: -0.02em;
+    line-height: 0.95; font-size: clamp(52px, 9.5vw, 144px); margin: 8px 0 0; }
+  .hero-title .em { font-style: italic; font-weight: 300; color: var(--coral); }
+  .hero-times { font-family: 'Fraunces', serif; font-style: italic; font-weight: 200;
+    font-size: clamp(20px, 3vw, 32px); margin: 24px 0 0; opacity: 0.75; max-width: 720px; line-height: 1.3; }
+  .hero-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 80px; margin-top: 80px; align-items: end; }
+  @media (max-width: 900px) { .hero-grid { grid-template-columns: 1fr; gap: 48px; } }
+  .hero-pull { font-family: 'Fraunces', serif; font-weight: 300; font-style: italic;
+    font-size: clamp(22px, 2.4vw, 32px); line-height: 1.25; max-width: 520px;
+    color: rgba(244, 238, 226, 0.92); border-left: 2px solid var(--gold-soft); padding-left: 24px; }
+  .hero-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+  .hero-stat { border-top: 1px solid rgba(244, 238, 226, 0.4); padding-top: 14px; }
+  .hero-stat .num { font-family: 'Fraunces', serif; font-weight: 400; font-size: clamp(36px, 4.5vw, 56px);
+    letter-spacing: -0.02em; line-height: 1; color: var(--paper); }
+  .hero-stat .num .accent { color: var(--coral); font-style: italic; font-weight: 300; }
+  .hero-stat .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.2em;
+    margin-top: 8px; opacity: 0.7; font-weight: 600; }
+
+  /* Section header */
+  .sec-head { display: grid; grid-template-columns: 80px 1fr; gap: 32px; margin-bottom: 56px;
+    align-items: start; border-top: 1px solid var(--line); padding-top: 40px; }
+  .sec-num { font-family: 'Fraunces', serif; font-style: italic; font-weight: 300;
+    font-size: 38px; color: var(--coral); line-height: 1; }
+  .sec-title { font-family: 'Fraunces', serif; font-weight: 400; font-size: clamp(36px, 5vw, 64px);
+    line-height: 1; letter-spacing: -0.02em; }
+  .sec-title .em { font-style: italic; font-weight: 300; }
+  .sec-sub { font-size: 17px; color: var(--ink-soft); margin-top: 16px; max-width: 600px; line-height: 1.5; }
+
+  /* KPI grid */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+    border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  @media (max-width: 900px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+  .kpi { padding: 36px 28px; border-right: 1px solid var(--line); }
+  .kpi:last-child { border-right: none; }
+  @media (max-width: 900px) {
+    .kpi:nth-child(2n) { border-right: none; }
+    .kpi:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+  }
+  .kpi-num { font-family: 'Fraunces', serif; font-weight: 400; font-size: clamp(40px, 5vw, 64px);
+    line-height: 1; letter-spacing: -0.025em; }
+  .kpi-num .small { font-size: 0.55em; vertical-align: top; opacity: 0.6; margin-left: 4px; }
+  .kpi-num .em { font-style: italic; font-weight: 300; color: var(--coral); }
+  .kpi-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--muted); margin-top: 16px; font-weight: 600; }
+  .kpi-note { font-family: 'Fraunces', serif; font-style: italic; font-weight: 300;
+    font-size: 14px; color: var(--ink-soft); margin-top: 8px; line-height: 1.4; }
+
+  /* Trajectory */
+  .trajectory { background: var(--paper-deep); margin-top: 80px; padding: 56px 48px 48px;
+    border-radius: 2px; position: relative; }
+  .trajectory::before { content: ''; position: absolute; top: 0; left: 0; width: 60px; height: 3px; background: var(--coral); }
+  .traj-header { display: flex; justify-content: space-between; align-items: baseline;
+    flex-wrap: wrap; gap: 20px; margin-bottom: 32px; }
+  .traj-title { font-family: 'Fraunces', serif; font-weight: 400; font-size: 32px; letter-spacing: -0.01em; }
+  .traj-title .em { font-style: italic; font-weight: 300; }
+  .traj-legend { display: flex; gap: 24px; font-size: 12px; text-transform: uppercase;
+    letter-spacing: 0.15em; font-weight: 600; }
+  .traj-legend .dot { display: inline-block; width: 10px; height: 10px;
+    border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+  .chart-container { position: relative; height: 420px; }
+
+  /* === REDESIGNED Annual completions ribbon === */
+  .completions-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0;
+    margin-top: 48px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  @media (max-width: 900px) { .completions-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 600px) { .completions-grid { grid-template-columns: repeat(2, 1fr); } }
+  .completion-cell { padding: 28px 18px 24px; border-right: 1px solid var(--line);
+    text-align: left; position: relative; overflow: hidden; }
+  .completion-cell:last-child { border-right: none; }
+  @media (max-width: 900px) { .completion-cell:nth-child(3n) { border-right: none; } }
+  .completion-cell .yr { font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--muted); letter-spacing: 0.15em; font-weight: 600; }
+  .completion-metric { display: flex; align-items: baseline; gap: 8px; margin-top: 16px; }
+  .completion-metric .num { font-family: 'Fraunces', serif; font-weight: 400;
+    font-size: clamp(34px, 4vw, 48px); line-height: 1; letter-spacing: -0.02em; }
+  .completion-metric .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em;
+    color: var(--muted); font-weight: 600; }
+  .completion-metric.secondary { margin-top: 8px; }
+  .completion-metric.secondary .num { font-size: clamp(20px, 2.4vw, 28px);
+    color: var(--coral); font-style: italic; font-weight: 300; }
+  .completion-cell.partial::after { content: 'Q1 only'; position: absolute;
+    top: 12px; right: 12px; font-size: 9px; text-transform: uppercase;
+    letter-spacing: 0.15em; color: var(--coral); font-weight: 700; }
+
+  /* Two-column atlas */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; }
+  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; gap: 48px; } }
+  .col-card { background: var(--paper-deep); padding: 40px; }
+  .col-card-title { font-family: 'Fraunces', serif; font-weight: 400; font-size: 28px;
+    letter-spacing: -0.01em; margin-bottom: 8px; }
+  .col-card-title .em { font-style: italic; font-weight: 300; }
+  .col-card-sub { font-size: 13px; color: var(--muted); margin-bottom: 28px;
+    text-transform: uppercase; letter-spacing: 0.15em; font-weight: 600; }
+  .countries-list { display: flex; flex-direction: column; gap: 14px; }
+  .country-row { display: grid; grid-template-columns: 130px 1fr 60px;
+    align-items: center; gap: 16px; }
+  .country-name { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 400; }
+  .country-bar { height: 12px; background: rgba(10, 31, 51, 0.06); border-radius: 1px;
+    overflow: hidden; position: relative; }
+  .country-bar-fill { position: absolute; inset: 0 auto 0 0;
+    background: linear-gradient(90deg, var(--teal) 0%, var(--coral) 100%); border-radius: 1px; }
+  .country-num { font-family: 'JetBrains Mono', monospace; font-size: 14px;
+    text-align: right; color: var(--ink-soft); }
+
+  /* Industries */
+  .industries-list { display: flex; flex-direction: column; }
+  .industry-row { display: grid; grid-template-columns: 1fr auto; gap: 16px;
+    padding: 14px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+  .industry-row:last-child { border-bottom: none; }
+  .industry-name { font-family: 'Fraunces', serif; font-size: 16px; line-height: 1.2; }
+  .industry-stats { font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    color: var(--muted); text-align: right; }
+  .industry-stats .em { font-style: italic; color: var(--coral); font-size: 18px;
+    font-family: 'Fraunces', serif; font-weight: 400; }
+
+  /* Packages list */
+  .packages-list { display: flex; flex-direction: column; }
+  .pkg-row { display: grid; grid-template-columns: 36px 1fr auto auto; gap: 20px;
+    align-items: baseline; padding: 18px 0; border-bottom: 1px solid var(--line); }
+  .pkg-row:last-child { border-bottom: none; }
+  .pkg-rank { font-family: 'Fraunces', serif; font-style: italic; font-weight: 300;
+    font-size: 22px; color: var(--coral); }
+  .pkg-name { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 400; line-height: 1.2; }
+  .pkg-stats { font-size: 12px; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.1em; font-weight: 600; }
+  .pkg-rev { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 400; text-align: right; }
+  .pkg-rev .small { font-family: 'Manrope', sans-serif; font-size: 11px; font-weight: 600;
+    color: var(--muted); display: block; text-transform: uppercase; letter-spacing: 0.15em; margin-top: 2px; }
+
+  /* Pull quote */
+  .pull-quote { font-family: 'Fraunces', serif; font-style: italic; font-weight: 300;
+    font-size: clamp(28px, 4vw, 48px); line-height: 1.15; letter-spacing: -0.015em;
+    max-width: 1000px; color: var(--ink); padding: 48px 0;
+    border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .pull-quote::before { content: '"'; color: var(--coral); }
+  .pull-quote::after { content: '"'; color: var(--coral); }
+
+  /* Loyalty */
+  .loyalty-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 48px; align-items: stretch; }
+  @media (max-width: 900px) { .loyalty-grid { grid-template-columns: 1fr; } }
+  .loyalty-stat { background: var(--ink); color: var(--paper); padding: 48px 40px;
+    position: relative; display: flex; flex-direction: column; justify-content: space-between;
+    min-height: 420px; overflow: hidden; }
+  .loyalty-stat::before { content: ''; position: absolute; inset: 0;
+    background-image: radial-gradient(circle at 80% 90%, rgba(221, 107, 77, 0.3) 0%, transparent 50%); }
+  .loyalty-stat .topline { font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--gold-soft); font-weight: 600; position: relative; z-index: 1; }
+  .loyalty-stat .big { font-family: 'Fraunces', serif; font-weight: 300;
+    font-size: clamp(80px, 12vw, 168px); line-height: 0.85; letter-spacing: -0.04em;
+    margin: 24px 0; position: relative; z-index: 1; }
+  .loyalty-stat .big .em { font-style: italic; color: var(--coral); }
+  .loyalty-stat .desc { font-family: 'Fraunces', serif; font-style: italic; font-weight: 300;
+    font-size: 22px; line-height: 1.3; max-width: 380px; position: relative; z-index: 1; }
+  .loyalty-breakdown { background: var(--paper-deep); padding: 40px; }
+  .loyalty-row { display: grid; grid-template-columns: 1fr auto; gap: 20px;
+    align-items: center; padding: 18px 0; border-bottom: 1px dashed var(--line); }
+  .loyalty-row:last-child { border-bottom: none; }
+  .loyalty-row .lbl { font-family: 'Fraunces', serif; font-size: 18px; }
+  .loyalty-row .lbl .em { font-style: italic; color: var(--coral); font-weight: 400; }
+  .loyalty-row .num { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 400; }
+  .loyalty-row .pct { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
+
+  /* Lifecycle */
+  .lifecycle-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 32px; }
+  @media (max-width: 900px) { .lifecycle-grid { grid-template-columns: 1fr; } }
+  .lifecycle-card { background: var(--paper-deep); padding: 36px 32px; position: relative; }
+  .lifecycle-card.dark { background: var(--ink); color: var(--paper); }
+  .lifecycle-card .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--muted); font-weight: 600; }
+  .lifecycle-card.dark .lbl { color: var(--gold-soft); }
+  .lifecycle-card .big { font-family: 'Fraunces', serif; font-weight: 400;
+    font-size: clamp(56px, 7vw, 96px); line-height: 1; margin: 18px 0 12px; letter-spacing: -0.025em; }
+  .lifecycle-card .big .em { font-style: italic; font-weight: 300; color: var(--coral); }
+  .lifecycle-card .big .small { font-size: 0.45em; opacity: 0.6; vertical-align: top; margin-left: 4px; }
+  .lifecycle-card .desc { font-family: 'Fraunces', serif; font-style: italic; font-weight: 300;
+    font-size: 17px; line-height: 1.35; margin-top: 10px; }
+  .lifecycle-card.dark .desc { color: rgba(244, 238, 226, 0.78); }
+
+  /* Partner ecosystem */
+  .partner-ecosystem { display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
+    margin-top: 32px; align-items: stretch; }
+  @media (max-width: 900px) { .partner-ecosystem { grid-template-columns: 1fr; } }
+  .partner-overview { background: var(--ink); color: var(--paper); padding: 48px 40px;
+    position: relative; overflow: hidden; }
+  .partner-overview::before { content: ''; position: absolute; inset: 0;
+    background-image: radial-gradient(circle at 20% 100%, rgba(176, 141, 79, 0.2) 0%, transparent 60%); }
+  .partner-overview > * { position: relative; z-index: 1; }
+  .partner-big { font-family: 'Fraunces', serif; font-weight: 300;
+    font-size: clamp(96px, 14vw, 200px); line-height: 0.85; letter-spacing: -0.04em; margin-top: 24px; }
+  .partner-big .em { font-style: italic; color: var(--coral); }
+  .partner-overview .lbl-small { font-family: 'Fraunces', serif; font-style: italic;
+    font-size: 22px; margin-top: 24px; color: rgba(244, 238, 226, 0.85); line-height: 1.3; }
+  .partner-meta { display: flex; gap: 32px; margin-top: 40px; padding-top: 28px;
+    border-top: 1px solid rgba(244, 238, 226, 0.25); }
+  .partner-meta-item .num { font-family: 'Fraunces', serif; font-size: 38px; font-weight: 400; line-height: 1; }
+  .partner-meta-item .num .em { font-style: italic; color: var(--gold-soft); }
+  .partner-meta-item .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em;
+    margin-top: 8px; opacity: 0.7; font-weight: 600; }
+  .partner-categories { background: var(--paper-deep); padding: 40px; }
+  .partner-cat-row { display: grid; grid-template-columns: 1fr auto auto;
+    align-items: center; gap: 20px; padding: 20px 0; border-bottom: 1px solid var(--line); }
+  .partner-cat-row:last-child { border-bottom: none; }
+  .partner-cat-name { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 400; }
+  .partner-cat-rate { font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    color: var(--muted); letter-spacing: 0.05em; }
+  .partner-cat-count { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 400;
+    min-width: 50px; text-align: right; }
+  .partner-cat-count .em { font-style: italic; color: var(--coral); font-weight: 300; }
+
+  /* Wealth */
+  .wealth-hero { background: linear-gradient(140deg, var(--coral-deep) 0%, var(--ink) 75%);
+    color: var(--paper); padding: 64px 56px; position: relative; overflow: hidden; }
+  .wealth-hero::before { content: ''; position: absolute; inset: 0;
+    background-image: radial-gradient(circle at 90% 20%, rgba(176, 141, 79, 0.35) 0%, transparent 50%); }
+  .wealth-hero-grid { position: relative; z-index: 1; display: grid; grid-template-columns: 1.3fr 1fr; gap: 56px; align-items: end; }
+  @media (max-width: 900px) { .wealth-hero-grid { grid-template-columns: 1fr; gap: 32px; } }
+  .wealth-topline { font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--gold-soft); font-weight: 600; }
+  .wealth-big { font-family: 'Fraunces', serif; font-weight: 300;
+    font-size: clamp(80px, 12vw, 168px); line-height: 0.85; letter-spacing: -0.04em; margin: 24px 0 16px; }
+  .wealth-big .em { font-style: italic; color: var(--coral); }
+  .wealth-big .plus { font-style: italic; font-weight: 300; color: var(--gold-soft);
+    font-size: 0.5em; vertical-align: top; margin-left: 8px; }
+  .wealth-caption { font-family: 'Fraunces', serif; font-style: italic; font-weight: 300;
+    font-size: clamp(20px, 2.4vw, 28px); line-height: 1.3; color: rgba(244, 238, 226, 0.88);
+    max-width: 480px; border-left: 2px solid var(--gold-soft); padding-left: 20px; }
+  .wealth-table { background: var(--paper-deep); padding: 40px 48px; }
+  .wealth-row { display: grid; grid-template-columns: 36px 1fr 1.5fr auto; gap: 24px;
+    align-items: center; padding: 22px 0; border-bottom: 1px solid var(--line); }
+  .wealth-row:last-child { border-bottom: none; }
+  .wealth-row.is-total { border-top: 2px solid var(--ink); border-bottom: none;
+    padding-top: 28px; margin-top: 16px; }
+  .wealth-rank { font-family: 'Fraunces', serif; font-style: italic; font-weight: 300;
+    font-size: 22px; color: var(--coral); }
+  .wealth-name { font-family: 'Fraunces', serif; font-weight: 400; font-size: 22px;
+    line-height: 1.2; letter-spacing: -0.01em; }
+  .wealth-name .em { font-style: italic; font-weight: 300; }
+  .wealth-period { font-size: 11px; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.15em; font-weight: 600; margin-top: 6px; }
+  .wealth-bar-wrap { height: 14px; background: rgba(10, 31, 51, 0.06); border-radius: 1px;
+    overflow: hidden; position: relative; }
+  .wealth-bar { position: absolute; inset: 0 auto 0 0;
+    background: linear-gradient(90deg, var(--teal) 0%, var(--coral) 100%); border-radius: 1px; }
+  .wealth-bar-note { font-family: 'Fraunces', serif; font-style: italic; font-size: 13px;
+    color: var(--ink-soft); margin-top: 6px; font-weight: 300; }
+  .wealth-amount { font-family: 'Fraunces', serif; font-weight: 400; font-size: 28px;
+    text-align: right; line-height: 1; letter-spacing: -0.01em; }
+  .wealth-amount .small { font-size: 0.55em; opacity: 0.6; margin-right: 2px; }
+  .wealth-row.is-total .wealth-name { font-size: 26px; }
+  .wealth-row.is-total .wealth-amount { font-size: 38px; color: var(--coral-deep); }
+  @media (max-width: 700px) {
+    .wealth-table { padding: 32px 24px; }
+    .wealth-row { grid-template-columns: 28px 1fr auto; grid-template-rows: auto auto; gap: 12px; }
+    .wealth-row > div:nth-child(3) { grid-column: 1 / -1; }
+    .wealth-amount { font-size: 22px; }
+  }
+
+  /* Forecast */
+  .forecast { background: var(--ink); color: var(--paper); padding: 96px 0;
+    margin-top: 80px; position: relative; overflow: hidden; }
+  .forecast::before { content: ''; position: absolute; inset: 0;
+    background-image: radial-gradient(ellipse at 90% 10%, rgba(176, 141, 79, 0.18) 0%, transparent 50%),
+                      radial-gradient(ellipse at 10% 90%, rgba(221, 107, 77, 0.12) 0%, transparent 60%); }
+  .forecast .container { position: relative; z-index: 2; }
+  .forecast .sec-head { border-color: rgba(244, 238, 226, 0.2); }
+  .forecast .sec-title { color: var(--paper); }
+  .forecast .sec-num { color: var(--gold-soft); }
+  .forecast .sec-sub { color: rgba(244, 238, 226, 0.7); }
+  .forecast-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-top: 56px; }
+  @media (max-width: 900px) { .forecast-grid { grid-template-columns: 1fr; } }
+  .forecast-card { border: 1px solid rgba(244, 238, 226, 0.2); padding: 32px 28px; }
+  .forecast-card .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--gold-soft); font-weight: 600; }
+  .forecast-card .num { font-family: 'Fraunces', serif; font-weight: 300;
+    font-size: clamp(48px, 6vw, 80px); line-height: 1; margin: 16px 0; letter-spacing: -0.025em; }
+  .forecast-card .num .small { font-size: 0.5em; opacity: 0.7; }
+  .forecast-card .num .em { font-style: italic; color: var(--coral); }
+  .forecast-card .desc { font-family: 'Fraunces', serif; font-style: italic; font-weight: 300;
+    font-size: 15px; color: rgba(244, 238, 226, 0.75); line-height: 1.4; }
+
+  /* Footer */
+  footer { background: var(--ink); color: var(--paper); padding: 64px 0 40px; }
+  .foot-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 48px; align-items: start; }
+  @media (max-width: 700px) { .foot-grid { grid-template-columns: 1fr; gap: 32px; } }
+  .foot-brand { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 400; letter-spacing: -0.01em; }
+  .foot-brand .em { font-style: italic; color: var(--coral); }
+  .foot-tag { font-family: 'Fraunces', serif; font-style: italic; font-weight: 300; font-size: 17px;
+    margin-top: 8px; opacity: 0.8; }
+  .foot-section h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--gold-soft); margin-bottom: 16px; font-weight: 600; }
+  .foot-section p { font-size: 14px; opacity: 0.75; line-height: 1.7; }
+  .foot-bottom { border-top: 1px solid rgba(244, 238, 226, 0.15); margin-top: 56px;
+    padding-top: 24px; display: flex; justify-content: space-between; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.18em; opacity: 0.6; font-weight: 600; }
+
+  /* === ANALYTICS VIEW STYLES === */
+  .analytics-header { background: var(--ink); color: var(--paper); padding: 48px 0 40px; }
+  .analytics-header h1 { font-family: 'Fraunces', serif; font-weight: 400;
+    font-size: clamp(38px, 5vw, 56px); letter-spacing: -0.02em; line-height: 1; }
+  .analytics-header h1 .em { font-style: italic; font-weight: 300; color: var(--coral); }
+  .analytics-header .sub { font-family: 'Fraunces', serif; font-style: italic; font-weight: 300;
+    font-size: 18px; opacity: 0.7; margin-top: 12px; max-width: 700px; }
+  .analytics-meta { display: flex; gap: 24px; margin-top: 24px; flex-wrap: wrap;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.18em; font-weight: 600;
+    color: var(--gold-soft); }
+  .analytics-meta span::before { content: '◆ '; opacity: 0.5; }
+
+  .analytics-body { padding: 48px 0 96px; }
+
+  /* KPI tiles strip */
+  .akpi-strip { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; margin-bottom: 32px; }
+  @media (max-width: 1100px) { .akpi-strip { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 600px) { .akpi-strip { grid-template-columns: repeat(2, 1fr); } }
+  .akpi { background: var(--paper-deep); padding: 22px 20px; border-left: 3px solid var(--coral); }
+  .akpi .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em;
+    color: var(--muted); font-weight: 600; }
+  .akpi .num { font-family: 'Fraunces', serif; font-weight: 400; font-size: 36px;
+    line-height: 1; letter-spacing: -0.02em; margin-top: 10px; }
+  .akpi .num .small { font-size: 0.5em; opacity: 0.6; vertical-align: top; }
+  .akpi .num .em { font-style: italic; color: var(--coral); font-weight: 300; }
+  .akpi .sub { font-size: 11px; color: var(--muted); margin-top: 6px;
+    font-family: 'JetBrains Mono', monospace; }
+
+  /* Chart grid */
+  .chart-grid { display: grid; gap: 20px; }
+  .chart-grid.cols-1 { grid-template-columns: 1fr; }
+  .chart-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .chart-grid.cols-3 { grid-template-columns: 2fr 1fr 1fr; }
+  @media (max-width: 900px) {
+    .chart-grid.cols-2, .chart-grid.cols-3 { grid-template-columns: 1fr; }
+  }
+
+  .chart-card { background: var(--paper-deep); padding: 28px 28px 24px;
+    border-top: 2px solid var(--ink); }
+  .chart-card.tall .ch-area { height: 360px; }
+  .chart-card.short .ch-area { height: 240px; }
+  .chart-card.med .ch-area { height: 300px; }
+  .ch-title { font-family: 'Fraunces', serif; font-weight: 400; font-size: 21px;
+    letter-spacing: -0.01em; line-height: 1.15; }
+  .ch-title .em { font-style: italic; font-weight: 300; }
+  .ch-sub { font-size: 11px; color: var(--muted); margin-top: 4px; margin-bottom: 18px;
+    text-transform: uppercase; letter-spacing: 0.15em; font-weight: 600; }
+  .ch-area { position: relative; }
+
+  .chart-grid.row-spacing { margin-bottom: 20px; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .reveal { animation: fadeUp 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-inner">
+    <div class="topnav-brand">Smart <span class="em">Traveller</span> · Dashboard</div>
+    <div class="tab-switch" role="tablist">
+      <button class="active" data-view="editorial" role="tab" aria-selected="true">Editorial</button>
+      <button data-view="analytics" role="tab" aria-selected="false">Analytics</button>
+    </div>
+  </div>
+</nav>
+
+<div id="view-editorial" class="view active">
+
+<header class="hero">
+  <div class="hero-grain"></div>
+  <div class="container hero-content">
+    <div class="hero-meta">
+      <div class="left">
+        <span>Smart Traveller — Mauritius</span>
+        <span class="badge">Performance review</span>
+      </div>
+      <div>Vol. 01 / Issue 04 — April 2026</div>
+    </div>
+    <div class="reveal">
+      <div class="hero-eyebrow">Five years, two thousand lives.</div>
+      <h1 class="hero-title">A portrait <span class="em">in numbers.</span></h1>
+      <p class="hero-times">Smart Traveller helps people leave their old life behind and land softly in Mauritius. This is what that work has looked like, dossier by dossier, from 2021 through April 2026.</p>
+    </div>
+    <div class="hero-grid reveal" style="animation-delay: 0.2s;">
+      <p class="hero-pull">
+        Visa, home, work, schools, paws and all — every figure here represents a real human being who chose Mauritius over staying put, and trusted us to make the move.
+      </p>
+      <div class="hero-stats">
+        <div class="hero-stat"><div class="num">1,998</div><div class="lbl">People relocated</div></div>
+        <div class="hero-stat"><div class="num">995</div><div class="lbl">Dossiers handled</div></div>
+        <div class="hero-stat"><div class="num"><span class="accent">€1.6M</span></div><div class="lbl">Client lifetime value</div></div>
+        <div class="hero-stat"><div class="num">48</div><div class="lbl">Nationalities served</div></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-num">I.</div>
+      <div>
+        <h2 class="sec-title">The headline <span class="em">numbers.</span></h2>
+        <p class="sec-sub">A snapshot of Smart Traveller's documented activity from 2021 through April 2026 — clients, dossiers, value and reach, all from the books.</p>
+      </div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-num"><span id="kpi-people">—</span></div>
+        <div class="kpi-lbl">People relocated</div>
+        <div class="kpi-note">Sum of <em>Nb de Personnes</em> across <span id="kpi-dossiers">—</span> dossiers — every soul we've moved, including spouses, children, dependants.</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-num"><span class="em">€</span><span id="kpi-rev">—</span></div>
+        <div class="kpi-lbl">Total client value</div>
+        <div class="kpi-note">Full transaction value 2023+ — what each client paid in total, end-to-end, to come and settle here.</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-num"><span id="kpi-fam">—</span></div>
+        <div class="kpi-lbl">Avg family size</div>
+        <div class="kpi-note">Each dossier brings <span id="kpi-fam-2">—</span> people on average. Two-in-one is the rule, not the exception.</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-num"><span id="kpi-active">—</span></div>
+        <div class="kpi-lbl">Currently in process</div>
+        <div class="kpi-note">Live dossiers as of April 2026 — <span id="kpi-active-ppl">—</span> people in motion right now.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top: 0;">
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-num">II.</div>
+      <div>
+        <h2 class="sec-title">A trajectory,<br><span class="em">drawn upward.</span></h2>
+        <p class="sec-sub">Three years of monthly client value, and eight months of forecast. The dotted line is the conservative continuation of what we're already seeing this year.</p>
+      </div>
+    </div>
+    <div class="trajectory">
+      <div class="traj-header">
+        <div class="traj-title">Monthly client value <span class="em">— in euros, 2023 onward.</span></div>
+        <div class="traj-legend">
+          <span><span class="dot" style="background:var(--teal);"></span>Actual</span>
+          <span><span class="dot" style="background:var(--coral); opacity:0.7;"></span>Projected (May–Dec 2026)</span>
+        </div>
+      </div>
+      <div class="chart-container"><canvas id="trajectoryChart"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top: 24px;">
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-num">III.</div>
+      <div>
+        <h2 class="sec-title">Year by <span class="em">year.</span></h2>
+        <p class="sec-sub">For each calendar year: the number of <strong>dossiers</strong> we successfully closed (a dossier is one family or individual file), and the total <strong>people</strong> behind those dossiers — most dossiers cover a couple or a family.</p>
+      </div>
+    </div>
+    <div class="completions-grid" id="completions-grid"></div>
+  </div>
+</section>
+
+<section style="padding-top: 24px;">
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-num">IV.</div>
+      <div>
+        <h2 class="sec-title">An atlas <span class="em">of arrivals.</span></h2>
+        <p class="sec-sub">Where Smart Traveller's clients fly in from, and how they found us. France leads heavily — but the long tail spans 48 nationalities and is broadening every year.</p>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="col-card">
+        <div class="col-card-title">By <span class="em">nationality</span></div>
+        <div class="col-card-sub">Top 12 — dossiers, with people in parentheses</div>
+        <div class="countries-list" id="countries-list"></div>
+      </div>
+      <div class="col-card">
+        <div class="col-card-title">How they <span class="em">found us</span></div>
+        <div class="col-card-sub">Acquisition channels — 2023+</div>
+        <div class="chart-container" style="height:380px;"><canvas id="channelChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <p class="pull-quote">Word of mouth and YouTube together account for nearly half of all clients — proof that what we do, people tell other people about.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-num">V.</div>
+      <div>
+        <h2 class="sec-title">What they <span class="em">buy from us.</span></h2>
+        <p class="sec-sub">Two ways of looking at the same thing — by total revenue earned, and by number of dossiers actually delivered. Visa Premium dominates volume; Self-Employed Permits dominate revenue.</p>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="col-card">
+        <div class="col-card-title">By <span class="em">revenue</span></div>
+        <div class="col-card-sub">Top 8 services — 2023 onward</div>
+        <div class="packages-list" id="packages-by-revenue"></div>
+      </div>
+      <div class="col-card">
+        <div class="col-card-title">By <span class="em">dossier</span></div>
+        <div class="col-card-sub">Top 8 services — all-time, completed + active</div>
+        <div class="packages-list" id="packages-by-volume"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-num">VI.</div>
+      <div>
+        <h2 class="sec-title">The industries <span class="em">we serve.</span></h2>
+        <p class="sec-sub">Smart Traveller's clients aren't a uniform crowd. They're tech founders, marketers, retirees, doctors, accountants — each carrying a profession that needed somewhere new to land.</p>
+      </div>
+    </div>
+    <div class="col-card" style="background: var(--paper-deep); padding: 48px;">
+      <div class="industries-list" id="industries-list"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-num">VII.</div>
+      <div>
+        <h2 class="sec-title">New, returning, <span class="em">finished.</span></h2>
+        <p class="sec-sub">A look at the relocation lifecycle — how many came new, how many came back to renew, how many we couldn't carry through, and how long it took on average to deliver.</p>
+      </div>
+    </div>
+    <div class="lifecycle-grid">
+      <div class="lifecycle-card">
+        <div class="lbl">New vs Renewal</div>
+        <div class="big"><span id="lc-new">—</span><span class="small">/ <span id="lc-renew">—</span></span></div>
+        <div class="desc">Mostly new arrivals. Renewals happen when permits expire — currently <span id="lc-renew-pct">—</span>% of completed work.</div>
+      </div>
+      <div class="lifecycle-card">
+        <div class="lbl">Cancellation rate</div>
+        <div class="big"><span id="lc-cancel">—</span><span class="small">%</span></div>
+        <div class="desc"><span id="lc-cancel-n">—</span> dossiers cancelled across the entire history. Below industry average for relocation services.</div>
+      </div>
+      <div class="lifecycle-card dark">
+        <div class="lbl">Median process duration</div>
+        <div class="big"><span id="lc-dur">—</span> <span class="small" style="font-size:0.4em; opacity:0.7;">days</span></div>
+        <div class="desc">From first contact to dossier closed — roughly <span id="lc-dur-mo">—</span> months, measured across <span id="lc-dur-n">—</span> tracked cases.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-num">VIII.</div>
+      <div>
+        <h2 class="sec-title">They <span class="em">come back.</span></h2>
+        <p class="sec-sub">A relocation isn't a single transaction. Over a quarter of our clients return for additional services — housing support, tax consulting, second permits, family additions — every return engagement deepens the relationship.</p>
+      </div>
+    </div>
+    <div class="loyalty-grid">
+      <div class="loyalty-stat">
+        <div class="topline">Loyalty in one figure</div>
+        <div>
+          <div class="big">1<span class="em">.</span>in<span class="em">.</span>4</div>
+          <div class="desc">clients return for further services. The most loyal has come back <em>thirty-one times.</em></div>
+        </div>
+      </div>
+      <div class="loyalty-breakdown">
+        <div class="col-card-title" style="margin-bottom:24px;">Engagement <span class="em">distribution</span></div>
+        <div id="loyalty-rows"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-num">IX.</div>
+      <div>
+        <h2 class="sec-title">The partner <span class="em">ecosystem.</span></h2>
+        <p class="sec-sub">Smart Traveller doesn't operate alone. Around the core service sits a constellation of vetted partners — real estate agencies, insurers, lawyers, fiscal experts, movers — through whom we've routed more than half a million euros of client charges since 2023.</p>
+      </div>
+    </div>
+    <div class="partner-ecosystem">
+      <div class="partner-overview">
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.2em; color:var(--gold-soft); font-weight:600;">Active partnerships</div>
+        <div class="partner-big"><span id="p-total">—</span></div>
+        <div class="lbl-small">vetted, contracted, and earning Smart Traveller a commission on every introduction.</div>
+        <div class="partner-meta">
+          <div class="partner-meta-item">
+            <div class="num"><span style="font-size:0.55em; opacity:0.6;">€</span><span class="em" id="p-charged">—</span></div>
+            <div class="lbl">Volume routed via partners</div>
+          </div>
+          <div class="partner-meta-item">
+            <div class="num" id="p-progress">—</div>
+            <div class="lbl">In signing process</div>
+          </div>
+        </div>
+      </div>
+      <div class="partner-categories" id="partner-categories"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-num">X.</div>
+      <div>
+        <h2 class="sec-title">Wealth, <span class="em">distributed.</span></h2>
+        <p class="sec-sub">Smart Traveller doesn't only earn. It pays a network of consultants and experts who deliver the services we sell branded ST. This is what's flowed through them since 2021 — the silent half of the company's economic footprint.</p>
+      </div>
+    </div>
+    <div class="wealth-hero">
+      <div class="wealth-hero-grid">
+        <div>
+          <div class="wealth-topline">Generated for partners & consultants</div>
+          <div class="wealth-big"><span style="font-size:0.55em; opacity:0.7; vertical-align: top;">€</span>322<span class="em">,</span>866<span class="plus">+</span></div>
+          <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.2em; opacity:0.65; font-weight:600;">2021 → April 2026</div>
+        </div>
+        <div class="wealth-caption">Six experts. Five years. Roughly a third of a million euros — paid <em>through</em> Smart Traveller, not by Smart Traveller.</div>
+      </div>
+    </div>
+    <div class="wealth-table" id="wealth-table"></div>
+  </div>
+</section>
+
+<section class="forecast">
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-num">XI.</div>
+      <div>
+        <h2 class="sec-title">The eight <br><span class="em">months ahead.</span></h2>
+        <p class="sec-sub">A grounded forecast, May through December 2026, calibrated against actual Q1 performance and 2025 seasonality. Not optimism — arithmetic.</p>
+      </div>
+    </div>
+    <div class="forecast-grid">
+      <div class="forecast-card">
+        <div class="lbl">Already booked, 2026 YTD</div>
+        <div class="num"><span class="small">€</span><span id="fc-ytd">—</span></div>
+        <div class="desc">Through the first four months of the year — already 54% of all of 2025.</div>
+      </div>
+      <div class="forecast-card">
+        <div class="lbl">Forecast, May → Dec</div>
+        <div class="num"><span class="em"><span class="small">€</span><span id="fc-rest">—</span></span></div>
+        <div class="desc">Calibrated against 2025 monthly seasonality with a moderated +52% growth multiplier.</div>
+      </div>
+      <div class="forecast-card">
+        <div class="lbl">Projected full year 2026</div>
+        <div class="num"><span class="small">€</span><span id="fc-full">—</span></div>
+        <div class="desc">Implied <span id="fc-yoy">—</span>% growth on 2025 — and roughly <span id="fc-clients">—</span> clients in motion.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div>
+        <div class="foot-brand">Smart <span class="em">Traveller</span></div>
+        <div class="foot-tag">Commencez à rêver, nous nous occupons du reste.</div>
+      </div>
+      <div class="foot-section">
+        <h4>What we do</h4>
+        <p>Visa & permits<br>Real estate & housing<br>Company setup<br>Family relocation<br>Pet & belongings transit</p>
+      </div>
+      <div class="foot-section">
+        <h4>Coordinates</h4>
+        <p>Port Louis, Mauritius<br>hello@smarttraveller.mu<br>smarttraveller.mu</p>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <div>© 2026 Smart Traveller Ltd</div>
+      <div>Performance review · April 2026</div>
+    </div>
+  </div>
+</footer>
+
+</div>
+
+<div id="view-analytics" class="view">
+  <header class="analytics-header">
+    <div class="container">
+      <h1>Analytics <span class="em">at a glance.</span></h1>
+      <p class="sub">A dense, chart-driven view of Smart Traveller's performance across all three data sources — process board, invoices, partner network. Every figure live from the books.</p>
+      <div class="analytics-meta">
+        <span>Source: 3 Monday boards</span>
+        <span>Period: 2021 → April 2026</span>
+        <span>Updated: April 28 2026</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="analytics-body">
+    <div class="container">
+
+      <!-- KPI strip -->
+      <div class="akpi-strip">
+        <div class="akpi"><div class="lbl">People relocated</div><div class="num" id="a-people">—</div><div class="sub">all-time</div></div>
+        <div class="akpi"><div class="lbl">Dossiers</div><div class="num" id="a-dossiers">—</div><div class="sub">2021 → today</div></div>
+        <div class="akpi"><div class="lbl">Client value</div><div class="num"><span class="small">€</span><span id="a-revenue">—</span></div><div class="sub">since 2023</div></div>
+        <div class="akpi"><div class="lbl">In process</div><div class="num" id="a-active">—</div><div class="sub">live dossiers</div></div>
+        <div class="akpi"><div class="lbl">Cancel rate</div><div class="num"><span id="a-cancel">—</span><span class="small">%</span></div><div class="sub">all-time</div></div>
+        <div class="akpi"><div class="lbl">Median duration</div><div class="num" id="a-duration">—</div><div class="sub">days · 621 cases</div></div>
+      </div>
+
+      <!-- Row 1: Year-by-year combo (full width) -->
+      <div class="chart-grid cols-1 row-spacing">
+        <div class="chart-card tall">
+          <div class="ch-title">Yearly performance — <span class="em">dossiers, people, revenue.</span></div>
+          <div class="ch-sub">All three angles together · revenue available 2023 onward</div>
+          <div class="ch-area"><canvas id="aYearlyCombo"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Row 2: Monthly trajectory (full width) -->
+      <div class="chart-grid cols-1 row-spacing">
+        <div class="chart-card tall">
+          <div class="ch-title">Monthly client value — <span class="em">2023 onward, with forecast.</span></div>
+          <div class="ch-sub">Solid: actual · dashed: projection May–Dec 2026</div>
+          <div class="ch-area"><canvas id="aMonthly"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Row 3: Nationalities + Industries -->
+      <div class="chart-grid cols-2 row-spacing">
+        <div class="chart-card med">
+          <div class="ch-title">Top nationalities — <span class="em">by dossier.</span></div>
+          <div class="ch-sub">15 countries shown · 48 served in total</div>
+          <div class="ch-area"><canvas id="aNationalities"></canvas></div>
+        </div>
+        <div class="chart-card med">
+          <div class="ch-title">Industry mix — <span class="em">where the people work.</span></div>
+          <div class="ch-sub">Top 10 sectors of activity</div>
+          <div class="ch-area"><canvas id="aIndustries"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Row 4: Services revenue + volume -->
+      <div class="chart-grid cols-2 row-spacing">
+        <div class="chart-card med">
+          <div class="ch-title">Services by <span class="em">revenue.</span></div>
+          <div class="ch-sub">Top 8 · invoice file · 2023+</div>
+          <div class="ch-area"><canvas id="aServicesRev"></canvas></div>
+        </div>
+        <div class="chart-card med">
+          <div class="ch-title">Services by <span class="em">dossier volume.</span></div>
+          <div class="ch-sub">Top 8 · process file · all-time</div>
+          <div class="ch-area"><canvas id="aServicesVol"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Row 5: Channels + Process Status -->
+      <div class="chart-grid cols-2 row-spacing">
+        <div class="chart-card med">
+          <div class="ch-title">Acquisition <span class="em">channels.</span></div>
+          <div class="ch-sub">How clients found us · 2023+</div>
+          <div class="ch-area"><canvas id="aChannels"></canvas></div>
+        </div>
+        <div class="chart-card med">
+          <div class="ch-title">Dossier <span class="em">status.</span></div>
+          <div class="ch-sub">Where every dossier sits in the pipeline</div>
+          <div class="ch-area"><canvas id="aStatus"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Row 6: Family size + Loyalty -->
+      <div class="chart-grid cols-2 row-spacing">
+        <div class="chart-card med">
+          <div class="ch-title">Family <span class="em">size distribution.</span></div>
+          <div class="ch-sub">How many people each dossier brings</div>
+          <div class="ch-area"><canvas id="aFamily"></canvas></div>
+        </div>
+        <div class="chart-card med">
+          <div class="ch-title">Engagement <span class="em">recurrence.</span></div>
+          <div class="ch-sub">How often clients return — 2023+ invoice data</div>
+          <div class="ch-area"><canvas id="aLoyalty"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Row 7: Partner volume + Wealth distributed -->
+      <div class="chart-grid cols-2 row-spacing">
+        <div class="chart-card med">
+          <div class="ch-title">Partner network — <span class="em">volume routed.</span></div>
+          <div class="ch-sub">Client charges via each partner category</div>
+          <div class="ch-area"><canvas id="aPartners"></canvas></div>
+        </div>
+        <div class="chart-card med">
+          <div class="ch-title">Wealth <span class="em">distributed.</span></div>
+          <div class="ch-sub">Paid through Smart Traveller to consultants · 2021+</div>
+          <div class="ch-area"><canvas id="aWealth"></canvas></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA = {"kpi":{"total_clients":823,"total_revenue":1618601.2655555555,"total_commission":1188775.2999999998,"returning_clients":212,"loyal_clients":67,"recurring_pct":25.759416767922232,"total_invoices":1305,"years_active":4,"countries":26},"yearly":[{"year":2023,"revenue":264519.35,"commission":213335.22,"clients":204,"invoices":275},{"year":2024,"revenue":345867.55925925926,"commission":246000.0,"clients":228,"invoices":324},{"year":2025,"revenue":654273.16,"commission":484692.07,"clients":380,"invoices":514},{"year":2026,"revenue":353941.1962962963,"commission":244748.01,"clients":154,"invoices":192}],"monthly":[{"year":2023,"month":1,"revenue":18240.11111111111,"commission":12049.0,"clients":20,"invoices":21,"date_str":"2023-01"},{"year":2023,"month":2,"revenue":24258.38888888889,"commission":19792.22,"clients":25,"invoices":29,"date_str":"2023-02"},{"year":2023,"month":3,"revenue":27049.814814814814,"commission":22115.0,"clients":24,"invoices":24,"date_str":"2023-03"},{"year":2023,"month":4,"revenue":27228.34074074074,"commission":24412.94,"clients":28,"invoices":30,"date_str":"2023-04"},{"year":2023,"month":5,"revenue":26703.36111111111,"commission":22941.07,"clients":27,"invoices":30,"date_str":"2023-05"},{"year":2023,"month":6,"revenue":29321.96851851852,"commission":24801.01,"clients":28,"invoices":30,"date_str":"2023-06"},{"year":2023,"month":7,"revenue":19491.0,"commission":18688.0,"clients":22,"invoices":23,"date_str":"2023-07"},{"year":2023,"month":8,"revenue":15616.111111111111,"commission":14775.2,"clients":21,"invoices":21,"date_str":"2023-08"},{"year":2023,"month":9,"revenue":16206.983333333334,"commission":9131.09,"clients":14,"invoices":16,"date_str":"2023-09"},{"year":2023,"month":11,"revenue":43143.270370370374,"commission":31129.69,"clients":37,"invoices":43,"date_str":"2023-11"},{"year":2023,"month":12,"revenue":17260.0,"commission":13500.0,"clients":8,"invoices":8,"date_str":"2023-12"},{"year":2024,"month":1,"revenue":37340.333333333336,"commission":20931.88,"clients":20,"invoices":22,"date_str":"2024-01"},{"year":2024,"month":2,"revenue":31257.13333333333,"commission":23918.89,"clients":26,"invoices":29,"date_str":"2024-02"},{"year":2024,"month":3,"revenue":23525.11111111111,"commission":20609.6,"clients":25,"invoices":26,"date_str":"2024-03"},{"year":2024,"month":4,"revenue":28272.766666666666,"commission":23239.45,"clients":27,"invoices":27,"date_str":"2024-04"},{"year":2024,"month":5,"revenue":55726.65740740741,"commission":35032.79,"clients":32,"invoices":33,"date_str":"2024-05"},{"year":2024,"month":6,"revenue":15882.555555555555,"commission":11334.0,"clients":15,"invoices":15,"date_str":"2024-06"},{"year":2024,"month":7,"revenue":21465.744444444445,"commission":14275.28,"clients":23,"invoices":25,"date_str":"2024-07"},{"year":2024,"month":8,"revenue":31288.266666666666,"commission":24109.74,"clients":29,"invoices":31,"date_str":"2024-08"},{"year":2024,"month":9,"revenue":21238.88888888889,"commission":17864.52,"clients":20,"invoices":22,"date_str":"2024-09"},{"year":2024,"month":10,"revenue":29165.916666666668,"commission":19841.61,"clients":22,"invoices":25,"date_str":"2024-10"},{"year":2024,"month":11,"revenue":20645.118518518517,"commission":9563.369999999999,"clients":20,"invoices":22,"date_str":"2024-11"},{"year":2024,"month":12,"revenue":30059.066666666666,"commission":25278.87,"clients":43,"invoices":47,"date_str":"2024-12"},{"year":2025,"month":1,"revenue":53043.01851851852,"commission":30263.52,"clients":27,"invoices":27,"date_str":"2025-01"},{"year":2025,"month":2,"revenue":54196.42407407407,"commission":46342.75,"clients":44,"invoices":49,"date_str":"2025-02"},{"year":2025,"month":3,"revenue":40863.23333333334,"commission":33577.66,"clients":29,"invoices":30,"date_str":"2025-03"},{"year":2025,"month":4,"revenue":54459.21740740741,"commission":50168.7,"clients":56,"invoices":57,"date_str":"2025-04"},{"year":2025,"month":5,"revenue":68864.75555555556,"commission":45109.71,"clients":41,"invoices":41,"date_str":"2025-05"},{"year":2025,"month":6,"revenue":58130.944444444445,"commission":32657.46,"clients":38,"invoices":42,"date_str":"2025-06"},{"year":2025,"month":7,"revenue":54732.12777777778,"commission":44482.69,"clients":33,"invoices":33,"date_str":"2025-07"},{"year":2025,"month":8,"revenue":62098.375925925924,"commission":54536.69,"clients":55,"invoices":61,"date_str":"2025-08"},{"year":2025,"month":9,"revenue":59786.01666666666,"commission":37923.98,"clients":48,"invoices":52,"date_str":"2025-09"},{"year":2025,"month":10,"revenue":54084.398148148146,"commission":39600.13,"clients":48,"invoices":50,"date_str":"2025-10"},{"year":2025,"month":11,"revenue":50667.816666666666,"commission":31738.16,"clients":34,"invoices":34,"date_str":"2025-11"},{"year":2025,"month":12,"revenue":43346.83148148148,"commission":38290.62,"clients":34,"invoices":38,"date_str":"2025-12"},{"year":2026,"month":1,"revenue":106777.81481481482,"commission":51574.56,"clients":38,"invoices":41,"date_str":"2026-01"},{"year":2026,"month":2,"revenue":72266.1962962963,"commission":55000.83,"clients":40,"invoices":43,"date_str":"2026-02"},{"year":2026,"month":3,"revenue":76783.01851851853,"commission":70203.34,"clients":54,"invoices":59,"date_str":"2026-03"},{"year":2026,"month":4,"revenue":98114.16666666667,"commission":67969.28,"clients":44,"invoices":49,"date_str":"2026-04"}],"top_services":[{"service":"AFFILIATION","revenue":524895.9555555555,"count":233},{"service":"OP - SELF-EMPLOYED","revenue":247234.0,"count":120},{"service":"VISA PREMIUM","revenue":183329.25,"count":270},{"service":"ENTREPRISE + INVESTISSEUR","revenue":175134.0,"count":35},{"service":"PERMIS RETRAIT\u00c9","revenue":112725.5,"count":68},{"service":"OP - INVESTISSEUR","revenue":103294.0,"count":36},{"service":"OP - PROFESSIONNEL","revenue":79123.5,"count":120},{"service":"SUPPORT VOYAGE","revenue":49859.5,"count":58},{"service":"VISA ETUDIANT","revenue":30254.0,"count":102},{"service":"SUPPORT LOGEMENT (LOCATION)","revenue":22209.0,"count":22}],"top_packages":[{"service_clean":"Partner Affiliations","revenue":524895.9555555555,"count":233,"avg_price":2252.7723414401526,"clients":48},{"service_clean":"Self-Employed Permit","revenue":247234.0,"count":120,"avg_price":2060.2833333333333,"clients":119},{"service_clean":"Visa Premium","revenue":183329.25,"count":270,"avg_price":678.9972222222223,"clients":237},{"service_clean":"Company + Investor Setup","revenue":175134.0,"count":35,"avg_price":5003.828571428571,"clients":34},{"service_clean":"Retiree Permit","revenue":112725.5,"count":68,"avg_price":1657.7279411764705,"clients":67},{"service_clean":"Investor Permit","revenue":103294.0,"count":36,"avg_price":2869.277777777778,"clients":36},{"service_clean":"Professional Permit","revenue":79123.5,"count":120,"avg_price":659.3625,"clients":61},{"service_clean":"Scouting Trip","revenue":49859.5,"count":58,"avg_price":859.6465517241379,"clients":56},{"service_clean":"Student Visa","revenue":30254.0,"count":102,"avg_price":296.6078431372549,"clients":88},{"service_clean":"Real Estate Purchase","revenue":28000.0,"count":14,"avg_price":2000.0,"clients":13},{"service_clean":"Housing Rental","revenue":22209.0,"count":22,"avg_price":1009.5,"clients":21},{"service_clean":"Expat Toolbox","revenue":17195.0,"count":81,"avg_price":212.28395061728395,"clients":81},{"service_clean":"Tax Consulting","revenue":15579.0,"count":43,"avg_price":362.30232558139534,"clients":41},{"service_clean":"Arrival Concierge","revenue":10320.0,"count":21,"avg_price":491.42857142857144,"clients":21},{"service_clean":"Company Incorporation","revenue":7800.0,"count":2,"avg_price":3900.0,"clients":2},{"service_clean":"Accounting","revenue":525.0,"count":2,"avg_price":262.5,"clients":2}],"countries":[{"country":"France","clients":578,"revenue":913203.5425925927,"visits":783},{"country":"Mauritius","clients":119,"revenue":436559.8462962963,"visits":262},{"country":"Other","clients":36,"revenue":11764.36,"visits":43},{"country":"Belgium","clients":31,"revenue":61579.0,"visits":38},{"country":"Switzerland","clients":22,"revenue":29942.0,"visits":34},{"country":"United States","clients":22,"revenue":40411.333333333336,"visits":55},{"country":"Madagascar","clients":8,"revenue":5906.0,"visits":9},{"country":"Canada","clients":7,"revenue":20098.0,"visits":10},{"country":"Reunion","clients":7,"revenue":3817.0,"visits":7},{"country":"Germany","clients":6,"revenue":15175.583333333334,"visits":6},{"country":"United Arab Emirates","clients":6,"revenue":11936.0,"visits":7},{"country":"Spain","clients":5,"revenue":6540.0,"visits":6},{"country":"United Kingdom","clients":4,"revenue":23211.600000000002,"visits":15},{"country":"Ivory Coast","clients":3,"revenue":5565.0,"visits":4},{"country":"DR Congo","clients":3,"revenue":4313.0,"visits":5},{"country":"Hong Kong","clients":2,"revenue":2500.0,"visits":2},{"country":"Hungary","clients":2,"revenue":4400.0,"visits":2},{"country":"Italy","clients":2,"revenue":4324.0,"visits":3},{"country":"Ghana","clients":1,"revenue":3880.0,"visits":6},{"country":"Cameroon","clients":1,"revenue":2280.0,"visits":1},{"country":"Luxembourg","clients":1,"revenue":280.0,"visits":1},{"country":"Norway","clients":1,"revenue":590.0,"visits":1},{"country":"Singapore","clients":1,"revenue":4500.0,"visits":2},{"country":"Slovakia","clients":1,"revenue":4845.0,"visits":1},{"country":"Thailand","clients":1,"revenue":600.0,"visits":1},{"country":"Togo","clients":1,"revenue":380.0,"visits":1}],"recurrence_buckets":{"1 visit":611,"2 visits":145,"3-4 visits":44,"5-9 visits":13,"10+ visits":10},"predictions":[{"date_str":"2026-05","year":2026,"month":5,"revenue":104889.7401477565,"clients":62,"predicted":true},{"date_str":"2026-06","year":2026,"month":6,"revenue":88540.78705619618,"clients":57,"predicted":true},{"date_str":"2026-07","year":2026,"month":7,"revenue":83363.95902420049,"clients":50,"predicted":true},{"date_str":"2026-08","year":2026,"month":8,"revenue":94583.68743084288,"clients":83,"predicted":true},{"date_str":"2026-09","year":2026,"month":9,"revenue":91061.67156256182,"clients":73,"predicted":true},{"date_str":"2026-10","year":2026,"month":10,"revenue":82377.38480361758,"clients":73,"predicted":true},{"date_str":"2026-11","year":2026,"month":11,"revenue":77173.49870985044,"clients":51,"predicted":true},{"date_str":"2026-12","year":2026,"month":12,"revenue":66022.7115255387,"clients":51,"predicted":true}],"total_2026_projected":1041954.6365568609,"clients_2026_projected":654,"projected_growth":1.5231265877817333,"channels":{"Word of Mouth":127,"Organic Search":75,"YouTube":73,"Existing Client":46,"Brand Ambassadors":29,"Webinars":19,"Facebook":10,"Instagram":3,"Expat Blogs":3,"LinkedIn":2},"partners":{"categories":[{"category":"Real Estate","count":23,"full_amount_charged":131961.88888888888},{"category":"Installation & Travel","count":16,"full_amount_charged":206180.90000000002},{"category":"Legal & Fiscal Experts","count":13,"full_amount_charged":136158.1},{"category":"Local Services","count":4,"full_amount_charged":50595.06666666667},{"category":"Media & Press","count":3,"full_amount_charged":0.0},{"category":"Institutional","count":1,"full_amount_charged":0.0}],"total_active":62,"in_progress":7,"avg_rate":0.21999999999999997,"total_charged":524895.9555555555},"partner_value":{"total":322866,"partners":[{"name":"Lawyer partners","amount":90000,"period":"2021 \u2192 Jan 2026","note":"Generated through services sold branded ST","category":"Legal & Fiscal"},{"name":"Robin Carroi","amount":89666,"period":"2025 \u2192 2026","note":"Real estate consultant \u00b7 launched 2025","category":"Specialist Consultants"},{"name":"Charlotte (Coconutravel)","amount":64100,"period":"2025 \u2192 2026","note":"Scouting trips \u00b7 arrival \u00b7 pets \u00b7 launched 2025","category":"Specialist Consultants"},{"name":"Accounting / Business plans","amount":36800,"period":"2023 \u2192 2026","note":"\u20ac10k \u00b7 \u20ac10k \u00b7 \u20ac11.8k \u00b7 \u20ac5k YTD","category":"Legal & Fiscal"},{"name":"Wendy / WMK","amount":22800,"period":"2022 \u2192 2026","note":"Tax specialist","category":"Legal & Fiscal"},{"name":"Lex-Strat\u00e9gie","amount":19500,"period":"Nov 2025 \u2192 Apr 2026","note":"Tax specialist \u00b7 6-month run rate","category":"Legal & Fiscal"}],"by_category":{"Legal & Fiscal":169100,"Specialist Consultants":153766}},"process":{"total_people":1998,"total_dossiers":995,"avg_family_size":2.01,"distinct_nationalities":48,"cancelled_dossiers":69,"cancelled_people":122,"cancel_rate_pct":6.9,"active_dossiers":124,"active_people":286,"new_count":845,"renewal_count":61,"process_duration_median_days":112.0,"process_duration_mean_days":129.0,"duration_tracked_count":621,"yearly_completions":[{"year":2021,"dossiers":29,"people":70},{"year":2022,"dossiers":96,"people":155},{"year":2023,"dossiers":157,"people":312},{"year":2024,"dossiers":185,"people":380},{"year":2025,"dossiers":215,"people":429},{"year":2026,"dossiers":61,"people":112}],"nationalities":[{"nationalite":"France","dossiers":748,"people":1536},{"nationalite":"Belgium","dossiers":33,"people":62},{"nationalite":"South Africa","dossiers":26,"people":46},{"nationalite":"Madagascar","dossiers":20,"people":28},{"nationalite":"Switzerland","dossiers":18,"people":31},{"nationalite":"United States","dossiers":13,"people":20},{"nationalite":"Germany","dossiers":8,"people":11},{"nationalite":"Hungary","dossiers":8,"people":23},{"nationalite":"Ghana","dossiers":7,"people":12},{"nationalite":"India","dossiers":6,"people":11},{"nationalite":"United Kingdom","dossiers":6,"people":10},{"nationalite":"Russia","dossiers":5,"people":7},{"nationalite":"Canada","dossiers":4,"people":11},{"nationalite":"Zimbabwe","dossiers":4,"people":11},{"nationalite":"Belarus","dossiers":4,"people":5}],"sectors":[{"secteur":"IT, Web, Data, Fintech & Greentech","dossiers":128,"people":289},{"secteur":"Marketing, Advertising, Media, Events & Communication","dossiers":83,"people":146},{"secteur":"Human Resources","dossiers":50,"people":65},{"secteur":"Accounting, Finance, Insurance & Audit","dossiers":36,"people":75},{"secteur":"Retraite","dossiers":26,"people":53},{"secteur":"Real Estate, Rentals & Property Management","dossiers":22,"people":53},{"secteur":"Sales & E-Commerce","dossiers":22,"people":53},{"secteur":"Advisory & Consultancy Services","dossiers":14,"people":29},{"secteur":"Wellness, Fashion & Beauty","dossiers":13,"people":26},{"secteur":"Education & Training","dossiers":13,"people":44},{"secteur":"Sports & Leisure","dossiers":13,"people":30},{"secteur":"Arts, Culture, Photography & Video","dossiers":12,"people":30}],"services_delivered":[{"service":"Visa Premium","dossiers":287,"people":755},{"service":"Professional Permit","dossiers":153,"people":196},{"service":"Self-Employed Permit","dossiers":145,"people":366},{"service":"Student Visa","dossiers":138,"people":141},{"service":"Retiree Permit","dossiers":73,"people":138},{"service":"Investor Permit","dossiers":41,"people":104},{"service":"Investor + Household","dossiers":29,"people":64},{"service":"Dependant Visa","dossiers":12,"people":23},{"service":"Real Estate Acquisition","dossiers":11,"people":20},{"service":"Self-Employed Toolbox","dossiers":10,"people":10},{"service":"CANCELLATION","dossiers":8,"people":19},{"service":"Support","dossiers":2,"people":4},{"service":"Household Permit","dossiers":1,"people":1}],"consultant_load":{"ST":823,"KUASA Ltd":160,"STAGISSIMO":1,"KUASA + JORAN":1},"status_distribution":[{"status":"Completed","dossiers":768,"people":1513},{"status":"Active","dossiers":125,"people":287},{"status":"Cancelled","dossiers":69,"people":122},{"status":"Other","dossiers":20,"people":44},{"status":"On hold","dossiers":7,"people":14},{"status":"Awaiting payment","dossiers":6,"people":18}],"family_size_distribution":[{"family_size":"1","count":532},{"family_size":"2","count":157},{"family_size":"3","count":121},{"family_size":"4","count":148},{"family_size":"5","count":31},{"family_size":"6+","count":6}],"nationalities_full":[{"nationalite":"France","dossiers":748,"people":1536},{"nationalite":"Belgium","dossiers":33,"people":62},{"nationalite":"South Africa","dossiers":26,"people":46},{"nationalite":"Madagascar","dossiers":20,"people":28},{"nationalite":"Switzerland","dossiers":18,"people":31},{"nationalite":"United States","dossiers":13,"people":20},{"nationalite":"Germany","dossiers":8,"people":11},{"nationalite":"Hungary","dossiers":8,"people":23},{"nationalite":"Ghana","dossiers":7,"people":12},{"nationalite":"India","dossiers":6,"people":11},{"nationalite":"United Kingdom","dossiers":6,"people":10},{"nationalite":"Russia","dossiers":5,"people":7},{"nationalite":"Canada","dossiers":4,"people":11},{"nationalite":"Zimbabwe","dossiers":4,"people":11},{"nationalite":"Belarus","dossiers":4,"people":5}],"yearly_combo":[{"year":2021,"dossiers":29,"people":70,"revenue":0},{"year":2022,"dossiers":96,"people":155,"revenue":0},{"year":2023,"dossiers":157,"people":312,"revenue":264519.35},{"year":2024,"dossiers":185,"people":380,"revenue":345867.55925925926},{"year":2025,"dossiers":215,"people":429,"revenue":654273.16},{"year":2026,"dossiers":61,"people":112,"revenue":353941.1962962963}]}};
+
+const fmtEUR = (n, dec=0) => {
+  if (n >= 1e6) return (n/1e6).toFixed(dec ? 2 : 1) + 'M';
+  if (n >= 1e3) return (n/1e3).toFixed(0) + 'k';
+  return Math.round(n).toString();
+};
+const fmtNum = n => Math.round(n).toLocaleString('en-US');
+
+// === Tab switcher ===
+document.querySelectorAll('.tab-switch button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const view = btn.dataset.view;
+    document.querySelectorAll('.tab-switch button').forEach(b => {
+      b.classList.toggle('active', b === btn);
+      b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
+    });
+    document.querySelectorAll('.view').forEach(v => {
+      v.classList.toggle('active', v.id === 'view-' + view);
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+
+// === Editorial KPIs ===
+document.getElementById('kpi-people').textContent = fmtNum(DATA.process.total_people);
+document.getElementById('kpi-dossiers').textContent = fmtNum(DATA.process.total_dossiers);
+document.getElementById('kpi-rev').textContent = fmtEUR(DATA.kpi.total_revenue);
+document.getElementById('kpi-fam').textContent = DATA.process.avg_family_size.toFixed(2);
+document.getElementById('kpi-fam-2').textContent = DATA.process.avg_family_size.toFixed(1);
+document.getElementById('kpi-active').textContent = fmtNum(DATA.process.active_dossiers);
+document.getElementById('kpi-active-ppl').textContent = fmtNum(DATA.process.active_people);
+
+// === Forecast cards ===
+const ytd2026 = DATA.yearly.find(y => y.year === 2026).revenue;
+const restPred = DATA.predictions.reduce((a, p) => a + p.revenue, 0);
+const fullPred = ytd2026 + restPred;
+const y2025 = DATA.yearly.find(y => y.year === 2025).revenue;
+const yoy = ((fullPred / y2025) - 1) * 100;
+document.getElementById('fc-ytd').textContent = fmtEUR(ytd2026);
+document.getElementById('fc-rest').textContent = fmtEUR(restPred);
+document.getElementById('fc-full').textContent = fmtEUR(fullPred);
+document.getElementById('fc-yoy').textContent = '+' + yoy.toFixed(0);
+document.getElementById('fc-clients').textContent = fmtNum(DATA.clients_2026_projected);
+
+// === Partners ===
+document.getElementById('p-total').textContent = DATA.partners.total_active;
+document.getElementById('p-charged').textContent = fmtEUR(DATA.partners.total_charged || 0);
+document.getElementById('p-progress').textContent = DATA.partners.in_progress;
+
+// === Lifecycle stats ===
+document.getElementById('lc-new').textContent = fmtNum(DATA.process.new_count);
+document.getElementById('lc-renew').textContent = DATA.process.renewal_count;
+const renewPct = (DATA.process.renewal_count / (DATA.process.new_count + DATA.process.renewal_count)) * 100;
+document.getElementById('lc-renew-pct').textContent = renewPct.toFixed(0);
+document.getElementById('lc-cancel').textContent = DATA.process.cancel_rate_pct.toFixed(1);
+document.getElementById('lc-cancel-n').textContent = DATA.process.cancelled_dossiers;
+document.getElementById('lc-dur').textContent = Math.round(DATA.process.process_duration_median_days);
+document.getElementById('lc-dur-mo').textContent = (DATA.process.process_duration_median_days / 30).toFixed(1);
+document.getElementById('lc-dur-n').textContent = DATA.process.duration_tracked_count;
+
+// === Partner categories list (editorial) ===
+const partnerCatEl = document.getElementById('partner-categories');
+partnerCatEl.insertAdjacentHTML('beforeend', `
+  <div class="col-card-title" style="margin-bottom:8px;">By <span class="em">category</span></div>
+  <div class="col-card-sub">Active referral partners only</div>
+`);
+DATA.partners.categories.forEach(c => {
+  const charged = c.full_amount_charged || 0;
+  const subText = charged > 0 ? `€${fmtNum(charged)} routed via these partners` : 'Strategic — no client transactions routed';
+  partnerCatEl.insertAdjacentHTML('beforeend', `
+    <div class="partner-cat-row">
+      <div><div class="partner-cat-name">${c.category}</div><div class="partner-cat-rate">${subText}</div></div>
+      <div></div>
+      <div class="partner-cat-count"><span class="em">${c.count}</span></div>
+    </div>
+  `);
+});
+
+// === Wealth table (editorial) ===
+const wealthEl = document.getElementById('wealth-table');
+const partners = DATA.partner_value.partners;
+const totalWealth = DATA.partner_value.total;
+const maxAmount = Math.max(...partners.map(p => p.amount));
+partners.forEach((p, i) => {
+  const pct = (p.amount / maxAmount) * 100;
+  wealthEl.insertAdjacentHTML('beforeend', `
+    <div class="wealth-row">
+      <div class="wealth-rank">${String(i+1).padStart(2, '0')}</div>
+      <div><div class="wealth-name">${p.name}</div><div class="wealth-period">${p.period} · ${p.category}</div></div>
+      <div><div class="wealth-bar-wrap"><div class="wealth-bar" style="width:${pct}%"></div></div><div class="wealth-bar-note">${p.note}</div></div>
+      <div class="wealth-amount"><span class="small">€</span>${fmtNum(p.amount)}</div>
+    </div>
+  `);
+});
+wealthEl.insertAdjacentHTML('beforeend', `
+  <div class="wealth-row is-total">
+    <div></div>
+    <div><div class="wealth-name">Total <span class="em">paid through Smart Traveller</span></div><div class="wealth-period">2021 → April 2026 · across all consultants</div></div>
+    <div></div>
+    <div class="wealth-amount"><span class="small">€</span>${fmtNum(totalWealth)}</div>
+  </div>
+`);
+
+// === REDESIGNED Year-by-year ribbon (editorial) ===
+const compEl = document.getElementById('completions-grid');
+DATA.process.yearly_completions.forEach(c => {
+  const isPartial = c.year === 2026;
+  compEl.insertAdjacentHTML('beforeend', `
+    <div class="completion-cell ${isPartial ? 'partial' : ''}">
+      <div class="yr">${c.year}</div>
+      <div class="completion-metric">
+        <div class="num">${c.dossiers}</div>
+        <div class="lbl">Dossiers</div>
+      </div>
+      <div class="completion-metric secondary">
+        <div class="num">${c.people}</div>
+        <div class="lbl">People</div>
+      </div>
+    </div>
+  `);
+});
+
+// === Trajectory chart (editorial) ===
+const inkColor = '#0A1F33', tealColor = '#1A5F7A', coralColor = '#DD6B4D', muteColor = '#6B6259';
+const goldColor = '#B08D4F', goldSoft = '#C9A767', tealLight = '#549DB9';
+
+const monthly = DATA.monthly;
+const labels = []; const actual = []; const predicted = [];
+monthly.forEach(m => { labels.push(m.date_str); actual.push(m.revenue); predicted.push(null); });
+DATA.predictions.forEach(p => { labels.push(p.date_str); actual.push(null); predicted.push(p.revenue); });
+const lastActualIdx = monthly.length - 1;
+predicted[lastActualIdx] = actual[lastActualIdx];
+
+const formatLabel = (s) => {
+  const [y, m] = s.split('-');
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return months[parseInt(m)-1] + ' ' + y.slice(2);
+};
+const xLabels = labels.map(formatLabel);
+
+function buildTrajectoryChart(canvasId) {
+  return new Chart(document.getElementById(canvasId), {
+    type: 'line',
+    data: {
+      labels: xLabels,
+      datasets: [
+        { label: 'Actual', data: actual, borderColor: tealColor, backgroundColor: 'rgba(26,95,122,0.08)',
+          borderWidth: 2.5, tension: 0.3, fill: true, pointRadius: 0, pointHoverRadius: 6,
+          pointHoverBackgroundColor: tealColor, pointHoverBorderColor: '#fff', pointHoverBorderWidth: 2, spanGaps: false },
+        { label: 'Forecast', data: predicted, borderColor: coralColor, backgroundColor: 'rgba(221,107,77,0.08)',
+          borderWidth: 2.5, borderDash: [6, 5], tension: 0.3, fill: true, pointRadius: 0, pointHoverRadius: 6,
+          pointHoverBackgroundColor: coralColor, pointHoverBorderColor: '#fff', pointHoverBorderWidth: 2 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { intersect: false, mode: 'index' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: inkColor, titleColor: '#F4EEE2', bodyColor: '#F4EEE2',
+          titleFont: { family: 'Manrope', size: 11, weight: 600 },
+          bodyFont: { family: 'JetBrains Mono', size: 13 },
+          padding: 12, cornerRadius: 2, displayColors: false,
+          borderColor: 'rgba(244,238,226,0.2)', borderWidth: 1,
+          callbacks: { label: (ctx) => ctx.parsed.y === null ? null : '€ ' + fmtNum(ctx.parsed.y) }
+        }
+      },
+      scales: {
+        y: { grid: { color: 'rgba(10,31,51,0.06)' }, border: { display: false },
+             ticks: { color: muteColor, font: { family: 'JetBrains Mono', size: 11 }, callback: (v) => '€' + fmtEUR(v) } },
+        x: { grid: { display: false }, border: { color: 'rgba(10,31,51,0.15)' },
+             ticks: { color: muteColor, font: { family: 'JetBrains Mono', size: 10 },
+                      maxRotation: 0, autoSkip: true, maxTicksLimit: 12 } }
+      }
+    }
+  });
+}
+
+buildTrajectoryChart('trajectoryChart');
+
+// === Countries (editorial) ===
+const nats = DATA.process.nationalities.slice(0, 12);
+const maxNat = Math.max(...nats.map(n => n.dossiers));
+const ctEl = document.getElementById('countries-list');
+nats.forEach(n => {
+  const pct = (n.dossiers / maxNat) * 100;
+  ctEl.insertAdjacentHTML('beforeend', `
+    <div class="country-row">
+      <div class="country-name">${n.nationalite}</div>
+      <div class="country-bar"><div class="country-bar-fill" style="width:${pct}%"></div></div>
+      <div class="country-num">${n.dossiers} <span style="opacity:0.55;">(${n.people})</span></div>
+    </div>
+  `);
+});
+
+// === Channel chart (editorial) ===
+const chEntries = Object.entries(DATA.channels).sort((a,b) => b[1] - a[1]);
+new Chart(document.getElementById('channelChart'), {
+  type: 'bar',
+  data: {
+    labels: chEntries.map(e => e[0]),
+    datasets: [{ data: chEntries.map(e => e[1]),
+      backgroundColor: ['#1A5F7A', '#2D7493', '#3F89A8', '#549DB9', '#6FB1C8', '#8FC4D5', '#DD6B4D', '#E5836B', '#EE9C89', '#F5B5A8'],
+      borderRadius: 1, barThickness: 22 }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { backgroundColor: inkColor, titleColor: '#F4EEE2', bodyColor: '#F4EEE2',
+        bodyFont: { family: 'JetBrains Mono', size: 12 }, cornerRadius: 2, displayColors: false,
+        callbacks: { label: (ctx) => fmtNum(ctx.parsed.x) + ' invoices' } }
+    },
+    scales: {
+      x: { grid: { color: 'rgba(10,31,51,0.06)' }, border: { display: false },
+           ticks: { color: muteColor, font: { family: 'JetBrains Mono', size: 10 } } },
+      y: { grid: { display: false }, border: { display: false },
+           ticks: { color: inkColor, font: { family: 'Fraunces', size: 14 } } }
+    }
+  }
+});
+
+// === Packages by revenue (editorial) ===
+const pkgRevEl = document.getElementById('packages-by-revenue');
+DATA.top_packages.slice(0, 8).forEach((p, i) => {
+  pkgRevEl.insertAdjacentHTML('beforeend', `
+    <div class="pkg-row">
+      <div class="pkg-rank">${String(i+1).padStart(2, '0')}</div>
+      <div><div class="pkg-name">${p.service_clean}</div><div class="pkg-stats">${p.count} engagements · ${p.clients || '—'} clients</div></div>
+      <div></div>
+      <div class="pkg-rev">€${fmtEUR(p.revenue)}<span class="small">total value</span></div>
+    </div>
+  `);
+});
+
+// === Packages by volume (editorial) ===
+const pkgVolEl = document.getElementById('packages-by-volume');
+DATA.process.services_delivered.slice(0, 8).forEach((p, i) => {
+  pkgVolEl.insertAdjacentHTML('beforeend', `
+    <div class="pkg-row">
+      <div class="pkg-rank">${String(i+1).padStart(2, '0')}</div>
+      <div><div class="pkg-name">${p.service}</div><div class="pkg-stats">${p.people} people relocated</div></div>
+      <div></div>
+      <div class="pkg-rev">${p.dossiers}<span class="small">dossiers</span></div>
+    </div>
+  `);
+});
+
+// === Industries (editorial) ===
+const indEl = document.getElementById('industries-list');
+DATA.process.sectors.forEach(ind => {
+  indEl.insertAdjacentHTML('beforeend', `
+    <div class="industry-row">
+      <div class="industry-name">${ind.secteur}</div>
+      <div class="industry-stats"><span class="em">${ind.dossiers}</span> · ${ind.people} ppl</div>
+    </div>
+  `);
+});
+
+// === Loyalty rows (editorial) ===
+const lyEl = document.getElementById('loyalty-rows');
+const buckets = DATA.recurrence_buckets;
+const totalLoyalty = Object.values(buckets).reduce((a,b) => a+b, 0);
+const labels_pretty = {
+  '1 visit': ['One-time', 'engagement'],
+  '2 visits': ['Returned', 'twice'],
+  '3-4 visits': ['Three to four', 'engagements'],
+  '5-9 visits': ['Five to nine', 'engagements'],
+  '10+ visits': ['Ten or more', 'engagements — true loyalists'],
+};
+Object.entries(buckets).forEach(([k, v]) => {
+  const [a, b] = labels_pretty[k] || [k, ''];
+  const pct = (v / totalLoyalty * 100).toFixed(1);
+  lyEl.insertAdjacentHTML('beforeend', `
+    <div class="loyalty-row">
+      <div class="lbl">${a} <span class="em">${b}</span></div>
+      <div><div class="num" style="text-align:right;">${v}</div><div class="pct" style="text-align:right;">${pct}% of clients</div></div>
+    </div>
+  `);
+});
+
+// ================== ANALYTICS VIEW ==================
+
+document.getElementById('a-people').textContent = fmtNum(DATA.process.total_people);
+document.getElementById('a-dossiers').textContent = fmtNum(DATA.process.total_dossiers);
+document.getElementById('a-revenue').textContent = fmtEUR(DATA.kpi.total_revenue);
+document.getElementById('a-active').textContent = DATA.process.active_dossiers;
+document.getElementById('a-cancel').textContent = DATA.process.cancel_rate_pct.toFixed(1);
+document.getElementById('a-duration').textContent = Math.round(DATA.process.process_duration_median_days);
+
+const baseTooltip = {
+  backgroundColor: inkColor, titleColor: '#F4EEE2', bodyColor: '#F4EEE2',
+  titleFont: { family: 'Manrope', size: 11, weight: 600 },
+  bodyFont: { family: 'JetBrains Mono', size: 12 },
+  padding: 12, cornerRadius: 2, displayColors: false,
+  borderColor: 'rgba(244,238,226,0.2)', borderWidth: 1,
+};
+const monoFont = { family: 'JetBrains Mono', size: 10 };
+const fraunFont = { family: 'Fraunces', size: 13 };
+
+// Color palette for categorical charts
+const palette = ['#1A5F7A', '#DD6B4D', '#B08D4F', '#0F4257', '#C9A767', '#B84F33', '#2D7493', '#549DB9', '#6FB1C8', '#8FC4D5'];
+
+// === Yearly combo (dossiers + people + revenue) ===
+const ycombo = DATA.process.yearly_combo;
+new Chart(document.getElementById('aYearlyCombo'), {
+  data: {
+    labels: ycombo.map(c => c.year),
+    datasets: [
+      { type: 'bar', label: 'Dossiers', data: ycombo.map(c => c.dossiers), backgroundColor: tealColor, borderRadius: 2, yAxisID: 'y', order: 2 },
+      { type: 'bar', label: 'People', data: ycombo.map(c => c.people), backgroundColor: tealLight, borderRadius: 2, yAxisID: 'y', order: 2 },
+      { type: 'line', label: 'Revenue (€)', data: ycombo.map(c => c.revenue || null), borderColor: coralColor, backgroundColor: coralColor,
+        borderWidth: 2.5, tension: 0.3, yAxisID: 'y1', order: 1, pointRadius: 4, pointBackgroundColor: '#fff', pointBorderColor: coralColor, pointBorderWidth: 2,
+        spanGaps: true }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { intersect: false, mode: 'index' },
+    plugins: {
+      legend: { display: true, position: 'top', align: 'end',
+                labels: { font: { family: 'Manrope', size: 11, weight: 600 }, color: muteColor, boxWidth: 10, boxHeight: 10, padding: 16 } },
+      tooltip: { ...baseTooltip,
+        callbacks: { label: (ctx) => ctx.dataset.label + ': ' + (ctx.dataset.label.includes('€') ? '€' + fmtNum(ctx.parsed.y) : fmtNum(ctx.parsed.y)) }
+      }
+    },
+    scales: {
+      y: { position: 'left', grid: { color: 'rgba(10,31,51,0.06)' }, border: { display: false },
+           ticks: { color: muteColor, font: monoFont, callback: (v) => fmtNum(v) },
+           title: { display: true, text: 'Dossiers / People', color: muteColor, font: { family: 'Manrope', size: 10, weight: 600 } } },
+      y1: { position: 'right', grid: { display: false }, border: { display: false },
+            ticks: { color: coralColor, font: monoFont, callback: (v) => '€' + fmtEUR(v) },
+            title: { display: true, text: 'Revenue', color: coralColor, font: { family: 'Manrope', size: 10, weight: 600 } } },
+      x: { grid: { display: false }, border: { color: 'rgba(10,31,51,0.15)' },
+           ticks: { color: inkColor, font: { family: 'Fraunces', size: 14 } } }
+    }
+  }
+});
+
+// === Monthly trajectory (analytics) ===
+buildTrajectoryChart('aMonthly');
+
+// === Top nationalities (horizontal bar) ===
+const natChart = DATA.process.nationalities_full.slice(0, 12);
+new Chart(document.getElementById('aNationalities'), {
+  type: 'bar',
+  data: {
+    labels: natChart.map(n => n.nationalite),
+    datasets: [{ data: natChart.map(n => n.dossiers), backgroundColor: natChart.map((_, i) => i === 0 ? coralColor : tealColor),
+      borderRadius: 2, barThickness: 16 }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { ...baseTooltip,
+      callbacks: { label: (ctx) => natChart[ctx.dataIndex].dossiers + ' dossiers · ' + natChart[ctx.dataIndex].people + ' people' } } },
+    scales: {
+      x: { grid: { color: 'rgba(10,31,51,0.06)' }, border: { display: false },
+           ticks: { color: muteColor, font: monoFont } },
+      y: { grid: { display: false }, border: { display: false },
+           ticks: { color: inkColor, font: { family: 'Fraunces', size: 12 } } }
+    }
+  }
+});
+
+// === Industries donut ===
+const indChart = DATA.process.sectors.slice(0, 10);
+new Chart(document.getElementById('aIndustries'), {
+  type: 'doughnut',
+  data: {
+    labels: indChart.map(i => i.secteur),
+    datasets: [{ data: indChart.map(i => i.dossiers),
+      backgroundColor: ['#1A5F7A', '#DD6B4D', '#B08D4F', '#549DB9', '#C9A767', '#0F4257', '#2D7493', '#B84F33', '#6FB1C8', '#8FC4D5'],
+      borderColor: 'var(--paper-deep)', borderWidth: 2 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '60%',
+    plugins: { legend: { position: 'right', align: 'center',
+        labels: { font: { family: 'Manrope', size: 10 }, color: inkColor, boxWidth: 10, boxHeight: 10, padding: 8,
+                 generateLabels: (chart) => {
+                   const data = chart.data;
+                   return data.labels.map((l, i) => {
+                     const truncated = l.length > 32 ? l.slice(0, 32) + '…' : l;
+                     return { text: truncated + ' (' + data.datasets[0].data[i] + ')',
+                              fillStyle: data.datasets[0].backgroundColor[i], strokeStyle: data.datasets[0].backgroundColor[i],
+                              lineWidth: 0, hidden: false, index: i };
+                   });
+                 } } },
+      tooltip: { ...baseTooltip, callbacks: { label: (ctx) => ctx.parsed + ' dossiers' } }
+    }
+  }
+});
+
+// === Services by revenue (analytics) ===
+const svcRev = DATA.top_packages.slice(0, 8);
+new Chart(document.getElementById('aServicesRev'), {
+  type: 'bar',
+  data: {
+    labels: svcRev.map(s => s.service_clean),
+    datasets: [{ data: svcRev.map(s => s.revenue), backgroundColor: tealColor, borderRadius: 2, barThickness: 18 }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { ...baseTooltip,
+      callbacks: { label: (ctx) => '€' + fmtNum(ctx.parsed.x) + ' · ' + svcRev[ctx.dataIndex].count + ' engagements' } } },
+    scales: {
+      x: { grid: { color: 'rgba(10,31,51,0.06)' }, border: { display: false },
+           ticks: { color: muteColor, font: monoFont, callback: (v) => '€' + fmtEUR(v) } },
+      y: { grid: { display: false }, border: { display: false },
+           ticks: { color: inkColor, font: { family: 'Fraunces', size: 12 } } }
+    }
+  }
+});
+
+// === Services by volume (analytics) ===
+const svcVol = DATA.process.services_delivered.slice(0, 8);
+new Chart(document.getElementById('aServicesVol'), {
+  type: 'bar',
+  data: {
+    labels: svcVol.map(s => s.service),
+    datasets: [{ data: svcVol.map(s => s.dossiers), backgroundColor: coralColor, borderRadius: 2, barThickness: 18 }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { ...baseTooltip,
+      callbacks: { label: (ctx) => svcVol[ctx.dataIndex].dossiers + ' dossiers · ' + svcVol[ctx.dataIndex].people + ' people' } } },
+    scales: {
+      x: { grid: { color: 'rgba(10,31,51,0.06)' }, border: { display: false },
+           ticks: { color: muteColor, font: monoFont } },
+      y: { grid: { display: false }, border: { display: false },
+           ticks: { color: inkColor, font: { family: 'Fraunces', size: 12 } } }
+    }
+  }
+});
+
+// === Channels donut (analytics) ===
+const chDonut = Object.entries(DATA.channels).sort((a,b) => b[1] - a[1]);
+new Chart(document.getElementById('aChannels'), {
+  type: 'doughnut',
+  data: {
+    labels: chDonut.map(e => e[0]),
+    datasets: [{ data: chDonut.map(e => e[1]),
+      backgroundColor: ['#1A5F7A', '#2D7493', '#DD6B4D', '#549DB9', '#B08D4F', '#6FB1C8', '#0F4257', '#C9A767', '#8FC4D5', '#B84F33'],
+      borderColor: 'var(--paper-deep)', borderWidth: 2 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '60%',
+    plugins: { legend: { position: 'right', align: 'center',
+        labels: { font: { family: 'Manrope', size: 11 }, color: inkColor, boxWidth: 10, boxHeight: 10, padding: 8,
+                  generateLabels: (chart) => chart.data.labels.map((l, i) => ({
+                    text: l + ' (' + chart.data.datasets[0].data[i] + ')',
+                    fillStyle: chart.data.datasets[0].backgroundColor[i], strokeStyle: chart.data.datasets[0].backgroundColor[i],
+                    lineWidth: 0, hidden: false, index: i })) } },
+      tooltip: { ...baseTooltip, callbacks: { label: (ctx) => ctx.parsed + ' invoices' } }
+    }
+  }
+});
+
+// === Process status pie ===
+const statusData = DATA.process.status_distribution;
+const statusColorMap = { 'Completed': tealColor, 'Active': goldSoft, 'Cancelled': coralColor,
+                         'Awaiting payment': '#549DB9', 'On hold': muteColor, 'Other': '#8FC4D5' };
+new Chart(document.getElementById('aStatus'), {
+  type: 'doughnut',
+  data: {
+    labels: statusData.map(s => s.status),
+    datasets: [{ data: statusData.map(s => s.dossiers),
+      backgroundColor: statusData.map(s => statusColorMap[s.status] || '#8FC4D5'),
+      borderColor: 'var(--paper-deep)', borderWidth: 2 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '60%',
+    plugins: { legend: { position: 'right', align: 'center',
+        labels: { font: { family: 'Manrope', size: 11 }, color: inkColor, boxWidth: 10, boxHeight: 10, padding: 10,
+                  generateLabels: (chart) => chart.data.labels.map((l, i) => ({
+                    text: l + ' (' + chart.data.datasets[0].data[i] + ')',
+                    fillStyle: chart.data.datasets[0].backgroundColor[i],
+                    strokeStyle: chart.data.datasets[0].backgroundColor[i],
+                    lineWidth: 0, hidden: false, index: i })) } },
+      tooltip: { ...baseTooltip, callbacks: { label: (ctx) => ctx.parsed + ' dossiers · ' + statusData[ctx.dataIndex].people + ' people' } }
+    }
+  }
+});
+
+// === Family size distribution ===
+const famData = DATA.process.family_size_distribution;
+new Chart(document.getElementById('aFamily'), {
+  type: 'bar',
+  data: {
+    labels: famData.map(f => f.family_size + (f.family_size === '1' ? ' person' : ' people')),
+    datasets: [{ data: famData.map(f => f.count),
+      backgroundColor: ['#1A5F7A', '#2D7493', '#549DB9', '#DD6B4D', '#B08D4F', '#C9A767'],
+      borderRadius: 2, barThickness: 36 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { ...baseTooltip,
+      callbacks: { label: (ctx) => famData[ctx.dataIndex].count + ' dossiers' } } },
+    scales: {
+      y: { grid: { color: 'rgba(10,31,51,0.06)' }, border: { display: false },
+           ticks: { color: muteColor, font: monoFont },
+           title: { display: true, text: 'Number of dossiers', color: muteColor, font: { family: 'Manrope', size: 10, weight: 600 } } },
+      x: { grid: { display: false }, border: { color: 'rgba(10,31,51,0.15)' },
+           ticks: { color: inkColor, font: { family: 'Fraunces', size: 12 } } }
+    }
+  }
+});
+
+// === Loyalty bar ===
+const loyalKeys = Object.keys(DATA.recurrence_buckets);
+const loyalVals = Object.values(DATA.recurrence_buckets);
+new Chart(document.getElementById('aLoyalty'), {
+  type: 'bar',
+  data: {
+    labels: loyalKeys,
+    datasets: [{ data: loyalVals,
+      backgroundColor: ['#8FC4D5', '#549DB9', '#1A5F7A', '#DD6B4D', '#B84F33'],
+      borderRadius: 2, barThickness: 36 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { ...baseTooltip,
+      callbacks: { label: (ctx) => {
+        const total = loyalVals.reduce((a,b) => a+b, 0);
+        const pct = (ctx.parsed.y / total * 100).toFixed(1);
+        return ctx.parsed.y + ' clients (' + pct + '%)';
+      } } } },
+    scales: {
+      y: { grid: { color: 'rgba(10,31,51,0.06)' }, border: { display: false },
+           ticks: { color: muteColor, font: monoFont },
+           title: { display: true, text: 'Number of clients', color: muteColor, font: { family: 'Manrope', size: 10, weight: 600 } } },
+      x: { grid: { display: false }, border: { color: 'rgba(10,31,51,0.15)' },
+           ticks: { color: inkColor, font: { family: 'Fraunces', size: 12 } } }
+    }
+  }
+});
+
+// === Partner volume (analytics) ===
+const partnerCharted = DATA.partners.categories.filter(c => (c.full_amount_charged || 0) > 0)
+  .sort((a, b) => b.full_amount_charged - a.full_amount_charged);
+new Chart(document.getElementById('aPartners'), {
+  type: 'bar',
+  data: {
+    labels: partnerCharted.map(c => c.category),
+    datasets: [{ data: partnerCharted.map(c => c.full_amount_charged),
+      backgroundColor: tealColor, borderRadius: 2, barThickness: 28 }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { ...baseTooltip,
+      callbacks: { label: (ctx) => '€' + fmtNum(ctx.parsed.x) + ' · ' + partnerCharted[ctx.dataIndex].count + ' partners' } } },
+    scales: {
+      x: { grid: { color: 'rgba(10,31,51,0.06)' }, border: { display: false },
+           ticks: { color: muteColor, font: monoFont, callback: (v) => '€' + fmtEUR(v) } },
+      y: { grid: { display: false }, border: { display: false },
+           ticks: { color: inkColor, font: { family: 'Fraunces', size: 13 } } }
+    }
+  }
+});
+
+// === Wealth distributed bar ===
+const wealthChartData = DATA.partner_value.partners;
+new Chart(document.getElementById('aWealth'), {
+  type: 'bar',
+  data: {
+    labels: wealthChartData.map(p => p.name.length > 24 ? p.name.slice(0, 24) + '…' : p.name),
+    datasets: [{ data: wealthChartData.map(p => p.amount),
+      backgroundColor: coralColor, borderRadius: 2, barThickness: 22 }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { ...baseTooltip,
+      callbacks: { label: (ctx) => '€' + fmtNum(ctx.parsed.x) + ' · ' + wealthChartData[ctx.dataIndex].period } } },
+    scales: {
+      x: { grid: { color: 'rgba(10,31,51,0.06)' }, border: { display: false },
+           ticks: { color: muteColor, font: monoFont, callback: (v) => '€' + fmtEUR(v) } },
+      y: { grid: { display: false }, border: { display: false },
+           ticks: { color: inkColor, font: { family: 'Fraunces', size: 12 } } }
+    }
+  }
+});
+
+</script>
+</body>
+</html>
