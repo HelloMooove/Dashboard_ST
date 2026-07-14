@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coup de Gueule des Lycéens | MOOOVE</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* --- DESIGN SYSTEM MOOOVE --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Aktiv Grotesk', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #eff9fe;
+            color: #052139;
+            min-height: 100vh;
+            padding: 40px 20px;
+            letter-spacing: -0.01em;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; }
+        
+        header {
+            background: #052139;
+            padding: 35px 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(5, 33, 57, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .header-title-block {
+            flex: 1;
+            min-width: 300px;
+            text-align: left;
+        }
+
+        h1 { 
+            color: #ffffff; 
+            font-size: 2.6em; 
+            font-weight: 700; 
+            margin: 0;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-signature {
+            text-align: right;
+            min-width: 380px;
+        }
+
+        .brand-mooove {
+            font-size: 3.5em;
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.12);
+            line-height: 1;
+            letter-spacing: 4px;
+            margin-bottom: 8px;
+        }
+
+        .brand-tagline {
+            color: #2ac2de;
+            font-size: 0.85em; 
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .loading { 
+            text-align: center; 
+            color: #3c5eab; 
+            font-size: 1.1em; 
+            font-weight: 600;
+            padding: 20px; 
+            background: #c7eafb;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .tabs { 
+            display: flex; 
+            gap: 8px; 
+            margin-bottom: 30px; 
+            flex-wrap: wrap;
+            border-bottom: 2px solid #c7eafb;
+            padding-bottom: 12px;
+        }
+        
+        .tab-btn {
+            padding: 12px 24px;
+            background: transparent;
+            color: #052139;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.95em;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .tab-btn:hover { background: #c7eafb; }
+        
+        .tab-btn.active {
+            background: #2ac2de; 
+            color: #052139;
+            box-shadow: 0 4px 12px rgba(42, 194, 222, 0.3);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 35px;
+        }
+        
+        .stat-card {
+            background: #ffffff;
+            padding: 30px 24px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(5, 33, 57, 0.04);
+            border: 1px solid #c7eafb;
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover { transform: translateY(-4px); }
+        
+        .stat-label { 
+            color: #3c5eab; 
+            font-size: 0.85em; 
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 10px;
+        }
+        
+        .stat-value { 
+            font-size: 2.6em; 
+            font-weight: 700; 
+            color: #052139; 
+            letter-spacing: -0.04em;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(550px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(5, 33, 57, 0.04);
+            border: 1px solid #c7eafb;
+            display: flex;
+            flex-direction: column;
+            height: 550px;
+        }
+        
+        .chart-title {
+            font-size: 1.15em;
+            font-weight: 700;
+            margin-bottom: 25px;
+            color: #052139;
+            letter-spacing: -0.01em;
+            border-bottom: 1px solid #eff9fe;
+            padding-bottom: 10px;
+        }
+        
+        canvas { flex: 1; min-height: 0; max-height: 450px !important; }
+
+        .analysis-block {
+            background: #052139; 
+            border-radius: 20px;
+            padding: 40px;
+            margin-top: 40px;
+            color: #ffffff;
+            box-shadow: 0 20px 50px rgba(5, 33, 57, 0.25);
+        }
+        
+        .analysis-title {
+            color: #ffffff;
+            font-size: 1.6em;
+            font-weight: 700;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.12);
+        }
+        
+        .analysis-section { margin-bottom: 25px; }
+        .analysis-section h3 {
+            color: #2ac2de; 
+            font-size: 1.1em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .analysis-section p {
+            color: #c7eafb; 
+            line-height: 1.75;
+            font-size: 1em;
+        }
+        
+        .analysis-section strong { color: #ffffff; font-weight: 700; }
+        
+        .analysis-conclusion {
+            background: rgba(246, 146, 62, 0.08);
+            border-left: 4px solid #f6923e; 
+            padding: 24px;
+            border-radius: 8px;
+            color: #eff9fe;
+            font-size: 1em;
+            line-height: 1.7;
+            margin-top: 30px;
+        }
+        
+        .analysis-conclusion strong { color: #f6923e; }
+        
+        .no-data-msg {
+            text-align: center;
+            padding: 60px 20px;
+            color: #ffffff;
+            font-size: 1.2em;
+            background: #f6923e; 
+            border-radius: 16px;
+            margin-top: 20px;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .charts-grid { grid-template-columns: 1fr; }
+            h1 { font-size: 2em; }
+            .brand-signature { text-align: left; }
+            body { padding: 20px 10px; }
+            header { padding: 30px 20px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <div class="header-title-block">
+            <h1>Coup de Gueule des Lycéens</h1>
+        </div>
+        <div class="brand-signature">
+            <div class="brand-mooove">MOOOVE</div>
+            <div class="brand-tagline">WE ARE NOT HERE TO WAIT. WE ARE HERE TO MOOOVE.</div>
+        </div>
+    </header>
+
+    <div id="loadingDiv" class="loading">Chargement de l'écosystème de données...</div>
+
+    <div id="noDataMsg" style="display:none;" class="no-data-msg">
+        <p id="errorText">Erreur de traitement des flux.</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('overview', this)">Vue d'Ensemble</button>
+        <button class="tab-btn" onclick="switchTab('school', this)">École & Apprentissage</button>
+        <button class="tab-btn" onclick="switchTab('ai', this)">Intelligence Artificielle</button>
+        <button class="tab-btn" onclick="switchTab('demographics', this)">Démographies</button>
+        <button class="tab-btn" onclick="switchTab('future', this)">Avenir & Carrière</button>
+    </div>
+
+    <!-- TAB 1: VUE D'ENSEMBLE -->
+    <div id="overview" class="tab-content active">
+        <div class="stats-grid" id="statsGrid"></div>
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="chart-title">Préparation pour la Vie d'Après</div>
+                <canvas id="chartPreparation"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Sentiments sur l'Avenir</div>
+                <canvas id="chartFeelings"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Intérêt pour les Cours Pratiques</div>
+                <canvas id="chartPractical"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Apprentissage Ludique (Jeux)</div>
+                <canvas id="chartGames"></canvas>
+            </div>
+        </div>
+
+        <div class="analysis-block">
+            <h2 class="analysis-title">Ce que nous disent les lycéens — Analyse globale</h2>
+
+            <div class="analysis-section">
+                <h3>Une école perçue comme insuffisamment préparatrice</h3>
+                <p>
+                    La majorité des <strong>202 lycéens</strong> interrogés (49%) donnent un score de <strong>3 sur 5</strong> à la capacité de l'école à les préparer pour la vie d'après, 
+                    et 16% donnent un score de 2. Moins d'un lycéen sur dix (5%) se sent <em>très bien</em> préparé. 
+                    Ce sentiment de préparation insuffisante est cohérent avec le fait que <strong>57% aimeraient apprendre des soft skills</strong> 
+                    (communication, gestion du stress, coopération) — des compétences souvent absentes des programmes scolaires classiques — 
+                    et que 90% se montrent intéressés ou ouverts aux cours pratiques (robotique, mécanique, arts de la maison...).
+                </p>
+            </div>
+
+            <div class="analysis-section">
+                <h3>Un avenir qui inquiète plus qu'il n'enthousiasme</h3>
+                <p>
+                    Face à l'avenir, le ressenti dominant est la <strong>neutralité anxieuse</strong> : 37% se situent à 3 sur 5, 
+                    tandis que 32% se sentent clairement anxieux (scores 1 et 2). Seulement 11% se déclarent vraiment confiants (score 5). 
+                    Cette anxiété se traduit dans les projets post-HSC : <strong>66% envisagent de partir étudier à l'étranger</strong>, 
+                    dont 21% sans intention de revenir. À peine 10% souhaitent rester étudier à Maurice.
+                </p>
+            </div>
+
+            <div class="analysis-conclusion">
+                <strong>En résumé :</strong> Ces lycéens ne rejettent pas l'école, mais ils lui reprochent de ne pas être à la hauteur de leur réalité. Ils veulent apprendre autrement, être préparés aux vrais défis du monde, et être guidés sur des enjeux concrets comme l'Intelligence Artificielle.
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: ÉCOLE & APPRENTISSAGE -->
+    <div id="school" class="tab-content">
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="chart-title">Ce qui Plaît dans les Cours (Top Réponses)</div>
+                <canvas id="chartLikes"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Ce qui Déplaît (Top Réponses)</div>
+                <canvas id="chartDislikes"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Intérêt pour les "Soft Skills"</div>
+                <canvas id="chartSoftSkills"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: IA -->
+    <div id="ai" class="tab-content">
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="chart-title">Utilisation de l'IA Générative</div>
+                <canvas id="chartAIUsage"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Perception de l'IA</div>
+                <canvas id="chartAIPerception"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Ressenti des élèves sur l'aide de l'école pour l'IA</div>
+                <canvas id="chartAISchool"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Ce qui Frustre le Plus sur l'IA et l'École</div>
+                <canvas id="chartAIFrustration"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Conscience Énergétique de l'IA</div>
+                <canvas id="chartAIEnergy"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Préoccupations en Matière de Données Personnelles</div>
+                <canvas id="chartAIPrivacy"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: DÉMOGRAPHIES -->
+    <div id="demographics" class="tab-content">
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="chart-title">Répartition par Âge</div>
+                <canvas id="chartAge"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Répartition par Classe</div>
+                <canvas id="chartGrade"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Répartition par Filière</div>
+                <canvas id="chartField"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 5: AVENIR & CARRIÈRE -->
+    <div id="future" class="tab-content">
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="chart-title">Plans d'Études après le HSC</div>
+                <canvas id="chartStudyPlans"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Principales Peurs pour le Futur (Top Réponses)</div>
+                <canvas id="chartFears"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Viabilité d'une Carrière à Maurice</div>
+                <canvas id="chartMauritius"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Ce qui Changerait Tout (Top Réponses)</div>
+                <canvas id="chartGameChanger"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    Chart.defaults.font.family = "'Aktiv Grotesk', 'Segoe UI', sans-serif";
+    Chart.defaults.color = '#052139';
+
+    let csvData = [];
+    const charts = {};
+
+    const MOOOVE_PALETTE = [
+        '#052139', '#3c5eab', '#2ac2de', '#9bdcfd', 
+        '#1d3d5a', '#5677bc', '#5fe2f4', '#c7eafb'
+    ];
+
+    const customTooltipConfig = {
+        backgroundColor: 'rgba(5, 33, 57, 0.95)',
+        titleColor: '#ffffff',
+        bodyColor: '#2ac2de',
+        titleFont: { family: "'Aktiv Grotesk', sans-serif", size: 12 },
+        bodyFont: { family: "'Aktiv Grotesk', sans-serif", size: 13, weight: 'bold' },
+        padding: 12,
+        cornerRadius: 8,
+        displayColors: false,
+        borderColor: '#c7eafb',
+        borderWidth: 1,
+        callbacks: {
+            title: function(items) {
+                let title = items[0].label;
+                return Array.isArray(title) ? title.join(' ') : title;
+            },
+            label: function(item) {
+                return item.raw + ' réponses';
+            }
+        }
+    };
+
+    const barNumbersPlugin = {
+        id: 'barNumbers',
+        afterDraw(chart) {
+            if (chart.config.type !== 'bar') return;
+            const { ctx, data } = chart;
+            const meta = chart.getDatasetMeta(0);
+            const isHorizontal = chart.config.options.indexAxis === 'y';
+            
+            ctx.save();
+            ctx.textBaseline = 'middle';
+            ctx.font = 'bold 12px "Aktiv Grotesk", sans-serif';
+            
+            meta.data.forEach((bar, i) => {
+                const val = data.datasets[0].data[i];
+                if (!val) return;
+                
+                if (isHorizontal) {
+                    ctx.textAlign = 'right';
+                    const textWidth = ctx.measureText(val).width;
+                    const barWidth = Math.abs(bar.x - bar.base);
+                    
+                    if (barWidth > textWidth + 15) {
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillText(val, bar.x - 8, bar.y + 1);
+                    } else {
+                        ctx.textAlign = 'left';
+                        ctx.fillStyle = '#052139';
+                        ctx.fillText(val, bar.x + 8, bar.y + 1);
+                    }
+                } else {
+                    ctx.textAlign = 'center';
+                    const barHeight = Math.abs(bar.y - bar.base);
+                    
+                    if (barHeight > 25) {
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillText(val, bar.x, bar.y + 12);
+                    } else {
+                        ctx.fillStyle = '#052139';
+                        ctx.fillText(val, bar.x, bar.y - 10);
+                    }
+                }
+            });
+            ctx.restore();
+        }
+    };
+
+    const doughnutLabelsLinePlugin = {
+        id: 'doughnutLabelsLine',
+        afterDraw(chart) {
+            if (chart.config.type !== 'doughnut') return;
+            const { ctx, data } = chart;
+            const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+            
+            chart.getDatasetMeta(0).data.forEach((arc, i) => {
+                const val = data.datasets[0].data[i];
+                if (val === 0) return;
+                const pct = Math.round((val / total) * 100);
+                
+                const angle = (arc.startAngle + arc.endAngle) / 2;
+                const cos = Math.cos(angle);
+                const sin = Math.sin(angle);
+                
+                const rInside = (arc.innerRadius + arc.outerRadius) / 2;
+                if (pct > 4) {
+                    ctx.save();
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 12px "Aktiv Grotesk", sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(pct + '%', arc.x + cos * rInside, arc.y + sin * rInside);
+                    ctx.restore();
+                }
+
+                const rOuter = arc.outerRadius;
+                const xStart = arc.x + cos * rOuter;
+                const yStart = arc.y + sin * rOuter;
+                
+                const lineLen = 30; 
+                const xMid = arc.x + cos * (rOuter + lineLen);
+                const yMid = arc.y + sin * (rOuter + lineLen);
+                
+                const isRight = cos >= 0;
+                const xEnd = isRight ? xMid + 20 : xMid - 20; 
+                
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(xStart, yStart);
+                ctx.lineTo(xMid, yMid);
+                ctx.lineTo(xEnd, yMid);
+                ctx.strokeStyle = '#c7eafb';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                
+                ctx.textAlign = isRight ? 'left' : 'right';
+                ctx.textBaseline = 'middle';
+                
+                let labelStr = data.labels[i];
+                if(Array.isArray(labelStr)) labelStr = labelStr.join(' ');
+                
+                const labelLines = wrapText(labelStr, 18);
+                let textY = yMid - ((labelLines.length * 13) / 2) + 4; 
+
+                ctx.font = '600 11px "Aktiv Grotesk", sans-serif';
+                ctx.fillStyle = '#052139';
+                labelLines.forEach(line => {
+                    ctx.fillText(line, isRight ? xEnd + 6 : xEnd - 6, textY);
+                    textY += 13;
+                });
+                
+                ctx.font = 'bold 11px "Aktiv Grotesk", sans-serif';
+                ctx.fillStyle = '#2ac2de';
+                ctx.fillText(val + ' réponses', isRight ? xEnd + 6 : xEnd - 6, textY + 2);
+                
+                ctx.restore();
+            });
+        }
+    };
+
+    Chart.register(barNumbersPlugin, doughnutLabelsLinePlugin);
+
+    function loadLocalData() {
+        document.getElementById('loadingDiv').style.display = 'block';
+        document.getElementById('noDataMsg').style.display = 'none';
+
+        fetch('./data.json')
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error("Impossible de charger le fichier data.json");
+                }
+                return res.json();
+            })
+            .then(data => {
+                csvData = data.filter(row => Object.values(row).some(v => v));
+                document.getElementById('loadingDiv').style.display = 'none';
+                
+                if (csvData.length === 0) {
+                    showError("Flux de données vide.");
+                } else {
+                    renderDashboard();
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showError("Erreur de traitement des flux : " + err.message);
+            });
+    }
+
+    function showError(message) {
+        document.getElementById('loadingDiv').style.display = 'none';
+        document.getElementById('noDataMsg').style.display = 'block';
+        document.getElementById('errorText').innerText = message;
+    }
+
+    function renderDashboard() {
+        renderStats();
+        renderOverview();
+        renderSchool();
+        renderAI();
+        renderDemographics();
+        renderFuture();
+    }
+
+    function renderStats() {
+        document.getElementById('statsGrid').innerHTML = `
+            <div class="stat-card">
+                <div class="stat-label">Total de Réponses</div>
+                <div class="stat-value" style="color: #3c5eab;">${csvData.length}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Âge Moyen</div>
+                <div class="stat-value">${getAverageAge()} ans</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Intérêt pour les soft skills</div>
+                <div class="stat-value" style="color: #2ac2de;">${getAIInterest()}%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Souhait d'étudier à l'étranger</div>
+                <div class="stat-value">${getWantToLeave()}%</div>
+            </div>
+        `;
+    }
+
+    function renderOverview() {
+        const prepCol = findCol('prépare à quel point');
+        if (prepCol) createChart('chartPreparation', '', countValues(csvData, prepCol), 'bar', {
+            '1': 'Pas préparé(e)', '2': 'Peu', '3': 'Moyennement', '4': 'Assez bien', '5': 'Très bien'
+        });
+
+        const feelCol = findCol('tu penses à ton avenir');
+        if (feelCol) createChart('chartFeelings', '', countValues(csvData, feelCol), 'bar', {
+            '1': 'Très angoissé', '2': 'Anxieux', '3': 'Mitigé', '4': 'Confiant', '5': 'Très confiant'
+        });
+
+        const practCol = findCol('intéressé.es par des cours pratiques');
+        if (practCol) createChart('chartPractical', '', countValues(csvData, practCol), 'doughnut');
+
+        const gamesCol = findCol('Aimeriez-vous apprendre de manière ludique');
+        if (gamesCol) createChart('chartGames', '', countValues(csvData, gamesCol), 'doughnut');
+    }
+
+    function renderSchool() {
+        const likesCol = findCol('plaît dans les cours');
+        if (likesCol) createChart('chartLikes', '', countMultipleAnswers(csvData, likesCol), 'horizontalBar');
+
+        const dislikesCol = findCol('détestes dans les cours');
+        if (dislikesCol) createChart('chartDislikes', '', countMultipleAnswers(csvData, dislikesCol), 'horizontalBar');
+
+        const softCol = findCol('softs skills');
+        if (softCol) createChart('chartSoftSkills', '', countValues(csvData, softCol), 'bar');
+    }
+
+    function renderAI() {
+        const aiUseCol = findCol('IA générative');
+        if (aiUseCol) createChart('chartAIUsage', '', countValues(csvData, aiUseCol), 'doughnut');
+
+        const aiPerCol = findCol("l'IA, ça t'évoque quoi") || findCol("IA, ça t'évoque");
+        if (aiPerCol) createChart('chartAIPerception', '', countMultipleAnswers(csvData, aiPerCol), 'horizontalBar');
+
+        const aiSchoolCol = findCol("À quel point l'école t'aide") || findCol("l'école t'aide");
+        if (aiSchoolCol) createChart('chartAISchool', '', countValues(csvData, aiSchoolCol), 'bar', {
+            '1': 'Pas du tout', '2': 'Très peu', '3': 'Un peu', '4': 'Assez bien', '5': 'Beaucoup'
+        });
+
+        const frustCol = findCol("frustre le plus");
+        if (frustCol) createChart('chartAIFrustration', '', countMultipleAnswers(csvData, frustCol), 'horizontalBar');
+
+        const energyCol = Object.keys(csvData[0]).find(k => k.toLowerCase().includes('tu savais que chaque fois'));
+        if (energyCol) createChart('chartAIEnergy', '', countValues(csvData, energyCol), 'doughnut');
+
+        const privacyCol = findCol("apps d'IA gardent tes conversations") || findCol("gardent tes conversations");
+        if (privacyCol) createChart('chartAIPrivacy', '', countValues(csvData, privacyCol), 'bar', {
+            '1': 'Pas dérangé', '2': 'Peu dérangé', '3': 'Neutre', '4': 'Inquiet', '5': 'Très inquiet'
+        });
+    }
+
+    function renderDemographics() {
+        const ageCol = findCol("T'as quel âge") || findCol("quel âge");
+        if (ageCol) createChart('chartAge', '', countValues(csvData, ageCol), 'bar');
+
+        const gradeCol = findCol("T'es en quelle classe") || findCol("quelle classe");
+        if (gradeCol) createChart('chartGrade', '', countValues(csvData, gradeCol), 'bar');
+
+        const fieldCol = findCol('Ta filière') || findCol('filière');
+        if (fieldCol) createChart('chartField', '', countValues(csvData, fieldCol), 'doughnut');
+    }
+
+    function renderFuture() {
+        const planCol = findCol('Après le HSC');
+        if (planCol) createStudyPlansChart(countValues(csvData, planCol));
+
+        const fearCol = findCol('Ce qui te fait le plus peur') || findCol('fait le plus peur');
+        if (fearCol) createChart('chartFears', '', countMultipleAnswers(csvData, fearCol), 'horizontalBar');
+
+        const changeCol = findCol('UN truc qui changerait tout') || findCol('changerait tout');
+        if (changeCol) createChart('chartGameChanger', '', countMultipleAnswers(csvData, changeCol), 'horizontalBar');
+
+        const maurCol = findCol('À quel point tu crois') || findCol('quel point tu crois');
+        if (maurCol) createMauritiusChart(countValues(csvData, maurCol));
+    }
+
+    function createMauritiusChart(data) {
+        const ctx = document.getElementById('chartMauritius');
+        if (!ctx) return;
+        if (charts['chartMauritius']) charts['chartMauritius'].destroy();
+
+        const SCALE = { '1': 'Impossible', '2': 'Très difficile', '3': 'Possible mais dur', '4': 'Bien possible', '5': 'Très possible' };
+        const axisLabels = data.labels.map(l => SCALE[l] ? SCALE[l].split('\n') : [l]);
+
+        charts['chartMauritius'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: axisLabels,
+                datasets: [{
+                    data: data.values,
+                    backgroundColor: data.values.map((_, i) => MOOOVE_PALETTE[i % MOOOVE_PALETTE.length]),
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: customTooltipConfig
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(5,33,57,0.06)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    function createStudyPlansChart(data) {
+        const ctx = document.getElementById('chartStudyPlans');
+        if (!ctx) return;
+        if (charts['chartStudyPlans']) charts['chartStudyPlans'].destroy();
+
+        const labelsBelowPlugin = {
+            id: 'labelsBelowBars',
+            afterDraw(chart) {
+                const { ctx: c, scales: { x, y } } = chart;
+                const meta = chart.getDatasetMeta(0);
+                c.save(); c.textAlign = 'center'; c.fillStyle = '#052139'; c.font = "11px 'Aktiv Grotesk', sans-serif";
+
+                meta.data.forEach((bar, i) => {
+                    const fullText = data.labels[i] || '';
+                    const barWidth = bar.width || 60;
+                    const lines = wrapText(fullText, Math.max(10, Math.floor(barWidth / 6)));
+                    const startY = y.bottom + 10;
+                    lines.forEach((line, li) => {
+                        c.fillText(line, bar.x, startY + li * 13);
+                    });
+                });
+                c.restore();
+            }
+        };
+
+        const maxLabelLines = Math.max(...data.labels.map(l => wrapText(l, 14).length));
+
+        charts['chartStudyPlans'] = new Chart(ctx, {
+            type: 'bar',
+            plugins: [labelsBelowPlugin],
+            data: {
+                labels: data.labels.map(() => ''),
+                datasets: [{
+                    data: data.values,
+                    backgroundColor: data.values.map((_, i) => MOOOVE_PALETTE[i % MOOOVE_PALETTE.length]),
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                layout: { padding: { bottom: maxLabelLines * 14 + 10 } },
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: customTooltipConfig
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(5,33,57,0.06)' } },
+                    x: { grid: { display: false }, ticks: { display: false } }
+                }
+            }
+        });
+    }
+
+    function createChart(canvasId, label, data, type, scaleLabels = null) {
+        const ctx = document.getElementById(canvasId);
+        if (!ctx) return;
+        if (charts[canvasId]) charts[canvasId].destroy();
+
+        const isHorizontal = type === 'horizontalBar';
+        const chartType = isHorizontal ? 'bar' : type;
+
+        const wrappedLabels = data.labels.map(l => {
+            if (scaleLabels && scaleLabels[l]) return scaleLabels[l].split('\n');
+            if (type === 'doughnut') return l;
+            return wrapLabel(l, isHorizontal ? 40 : 20);
+        });
+
+        const layoutConfig = type === 'doughnut' ? { padding: { left: 180, right: 180, top: 40, bottom: 40 } } : { padding: 0 };
+
+        charts[canvasId] = new Chart(ctx, {
+            type: chartType,
+            data: {
+                labels: wrappedLabels,
+                datasets: [{
+                    data: data.values,
+                    backgroundColor: data.values.map((_, i) => MOOOVE_PALETTE[i % MOOOVE_PALETTE.length]),
+                    borderRadius: isHorizontal ? 4 : 6
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                indexAxis: isHorizontal ? 'y' : 'x',
+                layout: layoutConfig,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: customTooltipConfig
+                },
+                scales: type === 'doughnut' ? {} : {
+                    y: { beginAtZero: true, grid: { color: 'rgba(5,33,57,0.06)' }, ticks: { color: '#052139', font: { family: "'Aktiv Grotesk', sans-serif" } } },
+                    x: { grid: { display: false }, ticks: { color: '#052139', font: { family: "'Aktiv Grotesk', sans-serif" } } }
+                }
+            }
+        });
+    }
+
+    function wrapLabel(text, maxChars) {
+        if (!text || text.length <= maxChars) return text;
+        const words = text.split(' '); const lines = []; let current = '';
+        for (const word of words) {
+            if ((current + ' ' + word).trim().length > maxChars) {
+                if (current) lines.push(current.trim()); current = word;
+            } else { current = (current + ' ' + word).trim(); }
+        }
+        if (current) lines.push(current.trim()); return lines;
+    }
+
+    function wrapText(text, maxChars) {
+        if (!text || text.length <= maxChars) return [text];
+        const words = text.split(' '); const lines = []; let cur = '';
+        for (const w of words) {
+            if ((cur + ' ' + w).trim().length > maxChars) {
+                if (cur) lines.push(cur.trim()); cur = w;
+            } else { cur = (cur + ' ' + w).trim(); }
+        }
+        if (cur) lines.push(cur.trim()); return lines;
+    }
+
+    function findCol(keyword) {
+        if (!csvData.length) return null;
+        return Object.keys(csvData[0]).find(k => k.includes(keyword)) || null;
+    }
+
+    function countValues(data, column, limit = 8) {
+        const counts = {};
+        data.forEach(row => {
+            const val = (row[column] || '').trim();
+            if (val) counts[val] = (counts[val] || 0) + 1;
+        });
+        const sorted = Object.entries(counts).filter(([, v]) => v >= 4).sort((a, b) => b[1] - a[1]).slice(0, limit);
+        return { labels: sorted.map(([l]) => l), values: sorted.map(([, v]) => v) };
+    }
+
+    function countMultipleAnswers(data, column, limit = 8) {
+        const counts = {};
+        data.forEach(row => {
+            const val = (row[column] || '').trim();
+            if (val) {
+                val.split(/[,;]\s*(?![^()]*\))/).map(s => s.trim()).filter(Boolean).forEach(item => {
+                    counts[item] = (counts[item] || 0) + 1;
+                });
+            }
+        });
+        const sorted = Object.entries(counts).filter(([, v]) => v >= 4).sort((a, b) => b[1] - a[1]).slice(0, limit);
+        return { labels: sorted.map(([l]) => l), values: sorted.map(([, v]) => v) };
+    }
+
+    function getAverageAge() {
+        const col = findCol("T'as quel âge") || findCol('quel âge');
+        if (!col) return 'N/A';
+        const ages = csvData.map(row => {
+            const m = (row[col] || '').match(/(\d+)/); return m ? parseInt(m[1]) : null;
+        }).filter(Boolean);
+        return ages.length ? Math.round(ages.reduce((a, b) => a + b) / ages.length) : 'N/A';
+    }
+
+    function getAIInterest() {
+        const col = findCol('softs skills');
+        if (!col) return 'N/A';
+        const yes = csvData.filter(row => (row[col] || '').toLowerCase().includes('oui')).length;
+        return Math.round((yes / csvData.length) * 100);
+    }
+
+    function getWantToLeave() {
+        const col = findCol('Après le HSC');
+        if (!col) return 'N/A';
+        const count = csvData.filter(row => (row[col] || '').includes("l'étranger")).length;
+        return Math.round((count / csvData.length) * 100);
+    }
+
+    function switchTab(tabName, btn) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabName).classList.add('active');
+        if (btn) btn.classList.add('active');
+    }
+
+    window.addEventListener('load', loadLocalData);
+</script>
+</body>
+</html>
